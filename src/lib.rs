@@ -6,6 +6,8 @@
 //! assert_eq!(ktensor::hello_world(), "Hello World!");
 //! ```
 
+pub mod math;
+
 /// should return the static string `"Hello World!"`
 ///
 /// # Examples
