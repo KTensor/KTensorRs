@@ -31,7 +31,9 @@ impl <T> Matrix<T> {
             buffer: buffer,
         }
     }
+}
 
+impl <T> Matrix<T> where T: Copy {
     /// Returns reference to value at `Vec2`
     ///
     /// # Arguments
@@ -42,10 +44,11 @@ impl <T> Matrix<T> {
     ///
     /// ```
     /// let matrix = ktensor::math::Matrix::new(ktensor::math::Vec2(2, 3), vec![0, 1, 2, 3, 4, 5]);
-    /// assert_eq!(*matrix.get(ktensor::math::Vec2(1, 2)), 5);
+    /// assert_eq!(matrix.get(ktensor::math::Vec2(1, 2)), 5);
+    /// assert_eq!(matrix.get(ktensor::math::Vec2(1, 2)), 5);
     /// ```
-    pub fn get(&self, Vec2(x, y): Vec2) -> &T {
-        &self.buffer[x * self.dim.1 + y]
+    pub fn get(&self, Vec2(x, y): Vec2) -> T {
+        self.buffer[x * self.dim.1 + y]
     }
 }
 
@@ -62,7 +65,7 @@ impl <T> Matrix<T> {
 /// let matrix1 = ktensor::math::Matrix::new(ktensor::math::Vec2(2, 3), vec![0.0, 1.0, 2.0, 3.0, 4.0, 5.0]);
 /// let matrix2 = ktensor::math::Matrix::new(ktensor::math::Vec2(2, 3), vec![5.0, 4.0, 3.0, 2.0, 1.0, 0.0]);
 /// let matrix3 = matrix1 + matrix2;
-/// assert_eq!(*matrix3.get(ktensor::math::Vec2(0, 0)), 5.0);
+/// assert_eq!(matrix3.get(ktensor::math::Vec2(0, 0)), 5.0);
 /// ```
 impl<T> Add<Matrix<T>> for Matrix<T> where T: Add + Copy {
     type Output = Matrix<<T as Add>::Output>;
@@ -88,9 +91,9 @@ impl<T> Add<Matrix<T>> for Matrix<T> where T: Add + Copy {
 /// let matrix1 = ktensor::math::Matrix::new(ktensor::math::Vec2(2, 3), vec![0.0, 1.0, 2.0, 3.0, 4.0, 5.0]);
 /// let matrix2 = ktensor::math::Matrix::new(ktensor::math::Vec2(2, 3), vec![5.0, 4.0, 3.0, 2.0, 1.0, 0.0]);
 /// let matrix3 = &matrix1 + &matrix2;
-/// assert_eq!(*matrix1.get(ktensor::math::Vec2(0, 0)), 0.0);
-/// assert_eq!(*matrix2.get(ktensor::math::Vec2(0, 0)), 5.0);
-/// assert_eq!(*matrix3.get(ktensor::math::Vec2(0, 0)), 5.0);
+/// assert_eq!(matrix1.get(ktensor::math::Vec2(0, 0)), 0.0);
+/// assert_eq!(matrix2.get(ktensor::math::Vec2(0, 0)), 5.0);
+/// assert_eq!(matrix3.get(ktensor::math::Vec2(0, 0)), 5.0);
 /// ```
 impl<'a, 'b, T> Add<&'b Matrix<T>> for &'a Matrix<T> where T: Add + Copy {
     type Output = Matrix<<T as Add>::Output>;
