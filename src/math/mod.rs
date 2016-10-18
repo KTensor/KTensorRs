@@ -105,3 +105,57 @@ impl<'a, 'b, T> Add<&'b Matrix<T>> for &'a Matrix<T> where T: Add + Copy {
         Matrix::new(self.dim, buffer)
     }
 }
+
+/// Add Matrix and a constant
+///
+/// # Arguments
+///
+/// - `self` - this matrix
+/// - `rhs` - a constant
+///
+/// # Example
+///
+/// ```
+/// let matrix1 = ktensor::math::Matrix::new(ktensor::math::Vec2(2, 3), vec![0.0, 1.0, 2.0, 3.0, 4.0, 5.0]);
+/// let float = 1.0;
+/// let matrix2 = matrix1 + float;
+/// assert_eq!(matrix2.get(ktensor::math::Vec2(0, 0)), 1.0);
+/// ```
+impl<T> Add<T> for Matrix<T> where T: Add + Copy {
+    type Output = Matrix<<T as Add>::Output>;
+    fn add(self, rhs: T) -> Matrix<<T as Add>::Output> {
+        let mut buffer = Vec::new();
+        for &i in self.buffer.iter() {
+            buffer.push(i + rhs);
+        }
+        Matrix::new(self.dim, buffer)
+    }
+}
+
+/// Add Matrix and a constant
+///
+/// # Arguments
+///
+/// - `self` - this matrix reference
+/// - `rhs` - a constant reference
+///
+/// # Example
+///
+/// ```
+/// let matrix1 = ktensor::math::Matrix::new(ktensor::math::Vec2(2, 3), vec![0.0, 1.0, 2.0, 3.0, 4.0, 5.0]);
+/// let float = 1.0;
+/// let matrix2 = &matrix1 + &float;
+/// assert_eq!(matrix1.get(ktensor::math::Vec2(0, 0)), 0.0);
+/// assert_eq!(matrix2.get(ktensor::math::Vec2(0, 0)), 1.0);
+/// assert_eq!(float, 1.0);
+/// ```
+impl<'a, 'b, T> Add<&'b T> for &'a Matrix<T> where T: Add + Copy {
+    type Output = Matrix<<T as Add>::Output>;
+    fn add(self, &rhs: &'b T) -> Matrix<<T as Add>::Output> {
+        let mut buffer = Vec::new();
+        for &i in self.buffer.iter() {
+            buffer.push(i + rhs);
+        }
+        Matrix::new(self.dim, buffer)
+    }
+}
