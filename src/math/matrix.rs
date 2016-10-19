@@ -31,6 +31,10 @@ impl <T> Matrix<T> {
             buffer: buffer,
         }
     }
+
+    pub fn len(&self) -> usize {
+        self.buffer.len()
+    }
 }
 
 impl <T> Matrix<T> where T: Copy {
@@ -76,7 +80,7 @@ impl<T> Add<Matrix<T>> for Matrix<T> where T: Add<Output=T> + Copy {
     /// assert_eq!(matrix3.get(ktensor::math::Vec2(0, 0)), 5.0);
     /// ```
     fn add(self, rhs: Matrix<T>) -> Matrix<T> {
-        let mut buffer = Vec::new();
+        let mut buffer = Vec::with_capacity(self.len());
         for (&i, &j) in self.buffer.iter().zip(rhs.buffer.iter()) {
             buffer.push(i + j);
         }
@@ -105,7 +109,7 @@ impl<'a, 'b, T> Add<&'b Matrix<T>> for &'a Matrix<T> where T: Add<Output=T> + Co
     /// assert_eq!(matrix3.get(ktensor::math::Vec2(0, 0)), 5.0);
     /// ```
     fn add(self, rhs: &'b Matrix<T>) -> Matrix<T> {
-        let mut buffer = Vec::new();
+        let mut buffer = Vec::with_capacity(self.len());
         for (&i, &j) in self.buffer.iter().zip(rhs.buffer.iter()) {
             buffer.push(i + j);
         }
@@ -132,7 +136,7 @@ impl<T> Add<T> for Matrix<T> where T: Add<Output=T> + Copy {
     /// assert_eq!(matrix2.get(ktensor::math::Vec2(0, 0)), 1.0);
     /// ```
     fn add(self, rhs: T) -> Matrix<T> {
-        let mut buffer = Vec::new();
+        let mut buffer = Vec::with_capacity(self.len());
         for &i in self.buffer.iter() {
             buffer.push(i + rhs);
         }
@@ -161,7 +165,7 @@ impl<'a, 'b, T> Add<&'b T> for &'a Matrix<T> where T: Add<Output=T> + Copy {
     /// assert_eq!(float, 1.0);
     /// ```
     fn add(self, &rhs: &'b T) -> Matrix<T> {
-        let mut buffer = Vec::new();
+        let mut buffer = Vec::with_capacity(self.len());
         for &i in self.buffer.iter() {
             buffer.push(i + rhs);
         }
@@ -190,12 +194,14 @@ impl<T> Mul<Matrix<T>> for Matrix<T> where T: Mul<Output=T> + Add<Output=T> + Co
     /// let matrix1 = ktensor::math::Matrix::new(ktensor::math::Vec2(2, 3), vec![0.0, 1.0, 2.0, 3.0, 4.0, 5.0]);
     /// let matrix2 = ktensor::math::Matrix::new(ktensor::math::Vec2(3, 2), vec![5.0, 4.0, 3.0, 2.0, 1.0, 0.0]);
     /// let matrix3 = matrix1 * matrix2;
-    /// assert_eq!(matrix3.buffer.len(), 4);
+    /// assert_eq!(matrix3.len(), 4);
+    /// assert_eq!(matrix3.get(ktensor::math::Vec2(0, 0)), 5.0);
     /// ```
-    fn mul(self, rhs: Matrix<T>) -> Matrix<<<T as Mul>::Output as Add>::Output> {
-        let mut buffer = Vec::new();
+    fn mul(self, rhs: Matrix<T>) -> Matrix<T> {
         let Vec2(x, y) = self.dim;
         let Vec2(x2, y2) = rhs.dim;
+        assert_eq!(y, x2);
+        let mut buffer = Vec::with_capacity(x * y2);
         for i in 0..x {
             for j in 0..y2 {
                 let mut sum = self.get(Vec2(i, 0)) * rhs.get(Vec2(0, j));
@@ -209,35 +215,45 @@ impl<T> Mul<Matrix<T>> for Matrix<T> where T: Mul<Output=T> + Add<Output=T> + Co
     }
 }
 
-// impl<'a, 'b, T> Add<&'b Matrix<T>> for &'a Matrix<T> where T: Add + Copy {
-//     type Output = Matrix<<T as Add>::Output>;
-//
-//     /// Add Matricies by reference
-//     ///
-//     /// # Arguments
-//     ///
-//     /// - `self` - this matrix reference
-//     /// - `rhs` - another matrix reference
-//     ///
-//     /// # Example
-//     ///
-//     /// ```
-//     /// let matrix1 = ktensor::math::Matrix::new(ktensor::math::Vec2(2, 3), vec![0.0, 1.0, 2.0, 3.0, 4.0, 5.0]);
-//     /// let matrix2 = ktensor::math::Matrix::new(ktensor::math::Vec2(2, 3), vec![5.0, 4.0, 3.0, 2.0, 1.0, 0.0]);
-//     /// let matrix3 = &matrix1 + &matrix2;
-//     /// assert_eq!(matrix1.get(ktensor::math::Vec2(0, 0)), 0.0);
-//     /// assert_eq!(matrix2.get(ktensor::math::Vec2(0, 0)), 5.0);
-//     /// assert_eq!(matrix3.get(ktensor::math::Vec2(0, 0)), 5.0);
-//     /// ```
-//     fn add(self, rhs: &'b Matrix<T>) -> Matrix<<T as Add>::Output> {
-//         let mut buffer = Vec::new();
-//         for (&i, &j) in self.buffer.iter().zip(rhs.buffer.iter()) {
-//             buffer.push(i + j);
-//         }
-//         Matrix::new(self.dim, buffer)
-//     }
-// }
-//
+impl<'a, 'b, T> Mul<&'b Matrix<T>> for &'a Matrix<T> where T: Mul<Output=T> + Add<Output=T> + Copy {
+    type Output = Matrix<T>;
+
+    /// Multiply Matricies by reference
+    ///
+    /// # Arguments
+    ///
+    /// - `self` - this matrix reference
+    /// - `rhs` - another matrix reference
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// let matrix1 = ktensor::math::Matrix::new(ktensor::math::Vec2(2, 3), vec![0.0, 1.0, 2.0, 3.0, 4.0, 5.0]);
+    /// let matrix2 = ktensor::math::Matrix::new(ktensor::math::Vec2(3, 2), vec![5.0, 4.0, 3.0, 2.0, 1.0, 0.0]);
+    /// let matrix3 = &matrix1 * &matrix2;
+    /// assert_eq!(matrix3.len(), 4);
+    /// assert_eq!(matrix1.get(ktensor::math::Vec2(0, 0)), 0.0);
+    /// assert_eq!(matrix2.get(ktensor::math::Vec2(0, 0)), 5.0);
+    /// assert_eq!(matrix3.get(ktensor::math::Vec2(0, 0)), 5.0);
+    /// ```
+    fn mul(self, rhs: &'b Matrix<T>) -> Matrix<T> {
+        let Vec2(x, y) = self.dim;
+        let Vec2(x2, y2) = rhs.dim;
+        assert_eq!(y, x2);
+        let mut buffer = Vec::with_capacity(x * y2);
+        for i in 0..x {
+            for j in 0..y2 {
+                let mut sum = self.get(Vec2(i, 0)) * rhs.get(Vec2(0, j));
+                for k in 1..y {
+                    sum = sum + self.get(Vec2(i, k)) * rhs.get(Vec2(k, j));
+                }
+                buffer.push(sum);
+            }
+        }
+        Matrix::new(Vec2(x, y2), buffer)
+    }
+}
+
 // impl<T> Add<T> for Matrix<T> where T: Add + Copy {
 //     type Output = Matrix<<T as Add>::Output>;
 //
