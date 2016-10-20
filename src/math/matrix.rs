@@ -80,6 +80,7 @@ impl<T> Add<Matrix<T>> for Matrix<T> where T: Add<Output=T> + Copy {
     /// assert_eq!(matrix3.get(ktensor::math::Vec2(0, 0)), 5.0);
     /// ```
     fn add(self, rhs: Matrix<T>) -> Matrix<T> {
+        assert_eq!(self.len(), rhs.len());
         let mut buffer = Vec::with_capacity(self.len());
         for (&i, &j) in self.buffer.iter().zip(rhs.buffer.iter()) {
             buffer.push(i + j);
@@ -109,6 +110,7 @@ impl<'a, 'b, T> Add<&'b Matrix<T>> for &'a Matrix<T> where T: Add<Output=T> + Co
     /// assert_eq!(matrix3.get(ktensor::math::Vec2(0, 0)), 5.0);
     /// ```
     fn add(self, rhs: &'b Matrix<T>) -> Matrix<T> {
+        assert_eq!(self.len(), rhs.len());
         let mut buffer = Vec::with_capacity(self.len());
         for (&i, &j) in self.buffer.iter().zip(rhs.buffer.iter()) {
             buffer.push(i + j);
