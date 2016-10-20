@@ -6,7 +6,7 @@ pub struct Vec2(pub usize, pub usize);
 
 /// A structure of values
 pub struct Matrix<T> {
-    /// 2 dimensional array of rows and columns
+    /// vector of rows and columns
     dim: Vec2,
     /// `Vector` of values in the `Matrix`
     buffer: Vec<T>,
@@ -61,7 +61,7 @@ impl <T> Matrix<T> where T: Copy {
 // Addition //
 //////////////
 
-impl<T> Add<Matrix<T>> for Matrix<T> where T: Add<Output=T> + Copy {
+impl <T> Add<Matrix<T>> for Matrix<T> where T: Add<Output=T> + Copy {
     type Output = Matrix<T>;
 
     /// Add Matricies
@@ -89,7 +89,7 @@ impl<T> Add<Matrix<T>> for Matrix<T> where T: Add<Output=T> + Copy {
     }
 }
 
-impl<'a, 'b, T> Add<&'b Matrix<T>> for &'a Matrix<T> where T: Add<Output=T> + Copy {
+impl <'a, 'b, T> Add<&'b Matrix<T>> for &'a Matrix<T> where T: Add<Output=T> + Copy {
     type Output = Matrix<T>;
 
     /// Add Matricies by reference
@@ -119,7 +119,7 @@ impl<'a, 'b, T> Add<&'b Matrix<T>> for &'a Matrix<T> where T: Add<Output=T> + Co
     }
 }
 
-impl<T> Add<T> for Matrix<T> where T: Add<Output=T> + Copy {
+impl <T> Add<T> for Matrix<T> where T: Add<Output=T> + Copy {
     type Output = Matrix<T>;
 
     /// Add Matrix and a constant
@@ -146,7 +146,7 @@ impl<T> Add<T> for Matrix<T> where T: Add<Output=T> + Copy {
     }
 }
 
-impl<'a, 'b, T> Add<&'b T> for &'a Matrix<T> where T: Add<Output=T> + Copy {
+impl <'a, 'b, T> Add<&'b T> for &'a Matrix<T> where T: Add<Output=T> + Copy {
     type Output = Matrix<T>;
 
     /// Add Matrix and a constant
@@ -180,7 +180,7 @@ impl<'a, 'b, T> Add<&'b T> for &'a Matrix<T> where T: Add<Output=T> + Copy {
 // Multiplication  //
 /////////////////////
 
-impl<T> Mul<Matrix<T>> for Matrix<T> where T: Mul<Output=T> + Add<Output=T> + Copy {
+impl <T> Mul<Matrix<T>> for Matrix<T> where T: Mul<Output=T> + Add<Output=T> + Copy {
     type Output = Matrix<T>;
 
     /// Multiply Matricies
@@ -217,7 +217,7 @@ impl<T> Mul<Matrix<T>> for Matrix<T> where T: Mul<Output=T> + Add<Output=T> + Co
     }
 }
 
-impl<'a, 'b, T> Mul<&'b Matrix<T>> for &'a Matrix<T> where T: Mul<Output=T> + Add<Output=T> + Copy {
+impl <'a, 'b, T> Mul<&'b Matrix<T>> for &'a Matrix<T> where T: Mul<Output=T> + Add<Output=T> + Copy {
     type Output = Matrix<T>;
 
     /// Multiply Matricies by reference
@@ -256,7 +256,7 @@ impl<'a, 'b, T> Mul<&'b Matrix<T>> for &'a Matrix<T> where T: Mul<Output=T> + Ad
     }
 }
 
-impl<T> Mul<T> for Matrix<T> where T: Mul<Output=T> + Copy {
+impl <T> Mul<T> for Matrix<T> where T: Mul<Output=T> + Copy {
     type Output = Matrix<T>;
 
     /// Multiply Matrix and a constant
@@ -283,7 +283,7 @@ impl<T> Mul<T> for Matrix<T> where T: Mul<Output=T> + Copy {
     }
 }
 
-impl<'a, 'b, T> Mul<&'b T> for &'a Matrix<T> where T: Mul<Output=T> + Copy {
+impl <'a, 'b, T> Mul<&'b T> for &'a Matrix<T> where T: Mul<Output=T> + Copy {
     type Output = Matrix<T>;
 
     /// Multiply Matrix and a constant

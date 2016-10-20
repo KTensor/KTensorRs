@@ -7,6 +7,9 @@
 //! ```
 
 pub mod math;
+pub mod tensor;
+
+pub use tensor::{Tensor};
 
 /// should return the static string `"Hello World!"`
 ///
