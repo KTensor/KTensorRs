@@ -17,8 +17,8 @@ impl <T> Matrix<T> {
     ///
     /// # Arguments
     ///
-    /// - `dimensions` - 2 dimensional array of rows and columns
-    /// - `buffer` - `Vector` of values
+    /// - `dimensions` - dimensions of `Matrix`
+    /// - `buffer` - `Vec` of values
     ///
     /// # Example
     ///
@@ -32,6 +32,7 @@ impl <T> Matrix<T> {
         }
     }
 
+    /// Returns the total number of items in the `Matrix`
     pub fn len(&self) -> usize {
         self.buffer.len()
     }

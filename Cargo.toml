@@ -1,5 +1,4 @@
 [package]
-
 name = "ktensor"
 description = "a graph based neural network framework"
 version = "0.0.1"
@@ -7,3 +6,6 @@ authors = [ "Kevin Wang <wangkevin448@gmail.com>" ]
 license = "MPL-2.0"
 readme = "README.md"
 repository = "https://github.com/KTensor/KTensorRs"
+
+[dependencies]
+rand = "0.3"
