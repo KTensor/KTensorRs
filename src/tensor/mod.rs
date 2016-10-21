@@ -45,7 +45,10 @@ impl Tensor<f64> {
         let Vec2(row, col) = dimensions;
         let mut rng = thread_rng();
         let normal = Normal::new(0.0, 1.0);
-        let buf = Vec::<f64>::with_capacity(row * col).iter().map(|&_| normal.ind_sample(&mut rng)).collect();
+        let mut buf = Vec::<f64>::with_capacity(row * col);
+        for _ in 0..(row * col) {
+            buf.push(normal.ind_sample(&mut rng));
+        }
 
         Tensor {
             dim: dimensions,

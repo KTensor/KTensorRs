@@ -39,7 +39,22 @@ impl <T> Matrix<T> {
 }
 
 impl <T> Matrix<T> where T: Copy {
-    /// Returns reference to value at `Vec2`
+    /// Gives ownership to the buffer
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// let vector = ktensor::math::Matrix::new(ktensor::math::Vec2(2, 3), vec![0, 1, 2, 3, 4, 5]).to_flattened();
+    /// let result = vec![0, 1, 2, 3, 4, 5];
+    /// for (&i, &j) in vector.iter().zip(result.iter()) {
+    ///     assert_eq!(i, j);
+    /// }
+    /// ```
+    pub fn to_flattened(self) -> Vec<T> {
+        self.buffer
+    }
+
+    /// Returns value at `Vec2`
     ///
     /// # Arguments
     ///
@@ -54,6 +69,37 @@ impl <T> Matrix<T> where T: Copy {
     /// ```
     pub fn get(&self, Vec2(x, y): Vec2) -> T {
         self.buffer[x * self.dim.1 + y]
+    }
+
+    /// Returns Matrix of values from [vec1 to vec2) (inclusive and exclusive)
+    ///
+    /// # Arguments
+    ///
+    /// - `Vec2` - coordinates of the first corner in the tensor
+    /// - `Vec2` - coordinates of the second corner in the tensor
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// let matrix = ktensor::math::Matrix::new(ktensor::math::Vec2(3, 3), vec![0, 1, 2, 3, 4, 5, 6, 7, 8]);
+    /// let slice = matrix.get_slice(ktensor::math::Vec2(1, 1), ktensor::math::Vec2(3, 3)).to_flattened();
+    /// let result = vec![4, 5, 7, 8];
+    /// for (&i, &j) in slice.iter().zip(result.iter()) {
+    ///     assert_eq!(i, j);
+    /// }
+    /// ```
+    pub fn get_slice(&self, Vec2(x1, y1): Vec2, Vec2(x2, y2): Vec2) -> Matrix<T> {
+        let mut buf = Vec::<T>::with_capacity((x2-x1) * (y2-y1));
+        for i in x1..x2 {
+            for j in y1..y2 {
+                buf.push(self.buffer[i * self.dim.1 + j]);
+            }
+        }
+
+        Matrix {
+            dim: Vec2(x2-x1, y2-y1),
+            buffer: buf
+        }
     }
 }
 
