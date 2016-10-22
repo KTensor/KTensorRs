@@ -23,7 +23,7 @@ impl <T> Matrix<T> {
     /// # Example
     ///
     /// ```
-    /// let matrix = ktensor::math::Matrix::new(ktensor::math::Vec2(2, 3), vec![0, 1, 2, 3, 4, 5]);
+    /// let matrix = ktensor::math::Matrix::new(ktensor::math::Vec2(2, 3), (0..6).collect());
     /// ```
     pub fn new(dimensions: Vec2, buffer: Vec<T>) -> Matrix<T> {
         Matrix {
@@ -44,7 +44,7 @@ impl <T> Matrix<T> where T: Copy {
     /// # Example
     ///
     /// ```
-    /// let vector = ktensor::math::Matrix::new(ktensor::math::Vec2(2, 3), vec![0, 1, 2, 3, 4, 5]).to_flattened();
+    /// let vector = ktensor::math::Matrix::new(ktensor::math::Vec2(2, 3), (0..6).collect()).to_flattened();
     /// let result = vec![0, 1, 2, 3, 4, 5];
     /// for (&i, &j) in vector.iter().zip(result.iter()) {
     ///     assert_eq!(i, j);
@@ -63,7 +63,7 @@ impl <T> Matrix<T> where T: Copy {
     /// # Example
     ///
     /// ```
-    /// let matrix = ktensor::math::Matrix::new(ktensor::math::Vec2(2, 3), vec![0, 1, 2, 3, 4, 5]);
+    /// let matrix = ktensor::math::Matrix::new(ktensor::math::Vec2(2, 3), (0..6).collect());
     /// assert_eq!(matrix.get(ktensor::math::Vec2(1, 2)), 5);
     /// assert_eq!(matrix.get(ktensor::math::Vec2(1, 2)), 5);
     /// ```
@@ -81,7 +81,7 @@ impl <T> Matrix<T> where T: Copy {
     /// # Example
     ///
     /// ```
-    /// let matrix = ktensor::math::Matrix::new(ktensor::math::Vec2(3, 3), vec![0, 1, 2, 3, 4, 5, 6, 7, 8]);
+    /// let matrix = ktensor::math::Matrix::new(ktensor::math::Vec2(3, 3), (0..9).collect());
     /// let slice = matrix.get_slice(ktensor::math::Vec2(1, 1), ktensor::math::Vec2(3, 3)).to_flattened();
     /// let result = vec![4, 5, 7, 8];
     /// for (&i, &j) in slice.iter().zip(result.iter()) {
@@ -113,7 +113,7 @@ impl <T> Matrix<T> where T: Copy {
     /// # Example
     ///
     /// ```
-    /// let matrix = ktensor::math::Matrix::new(ktensor::math::Vec2(3, 3), vec![0, 1, 2, 3, 4, 5, 6, 7, 8]);
+    /// let matrix = ktensor::math::Matrix::new(ktensor::math::Vec2(3, 3), (0..9).collect());
     /// let indicies = matrix.get_indicies(ktensor::math::Vec2(2, 2));
     /// let matrix = matrix.to_flattened();
     /// for &i in indicies.iter() {
@@ -175,8 +175,8 @@ impl <T> Add<Matrix<T>> for Matrix<T> where T: Add<Output=T> + Copy {
     /// # Example
     ///
     /// ```
-    /// let matrix1 = ktensor::math::Matrix::new(ktensor::math::Vec2(2, 3), vec![0.0, 1.0, 2.0, 3.0, 4.0, 5.0]);
-    /// let matrix2 = ktensor::math::Matrix::new(ktensor::math::Vec2(2, 3), vec![5.0, 4.0, 3.0, 2.0, 1.0, 0.0]);
+    /// let matrix1 = ktensor::math::Matrix::new(ktensor::math::Vec2(2, 3), (0..6).map(|i| i as f64).collect());
+    /// let matrix2 = ktensor::math::Matrix::new(ktensor::math::Vec2(2, 3), (0..6).map(|i| i as f64).rev().collect());
     /// let matrix3 = matrix1 + matrix2;
     /// assert_eq!(matrix3.get(ktensor::math::Vec2(0, 0)), 5.0);
     /// ```
@@ -203,8 +203,8 @@ impl <'a, 'b, T> Add<&'b Matrix<T>> for &'a Matrix<T> where T: Add<Output=T> + C
     /// # Example
     ///
     /// ```
-    /// let matrix1 = ktensor::math::Matrix::new(ktensor::math::Vec2(2, 3), vec![0.0, 1.0, 2.0, 3.0, 4.0, 5.0]);
-    /// let matrix2 = ktensor::math::Matrix::new(ktensor::math::Vec2(2, 3), vec![5.0, 4.0, 3.0, 2.0, 1.0, 0.0]);
+    /// let matrix1 = ktensor::math::Matrix::new(ktensor::math::Vec2(2, 3), (0..6).map(|i| i as f64).collect());
+    /// let matrix2 = ktensor::math::Matrix::new(ktensor::math::Vec2(2, 3), (0..6).map(|i| i as f64).rev().collect());
     /// let matrix3 = &matrix1 + &matrix2;
     /// assert_eq!(matrix1.get(ktensor::math::Vec2(0, 0)), 0.0);
     /// assert_eq!(matrix2.get(ktensor::math::Vec2(0, 0)), 5.0);
@@ -233,7 +233,7 @@ impl <T> Add<T> for Matrix<T> where T: Add<Output=T> + Copy {
     /// # Example
     ///
     /// ```
-    /// let matrix1 = ktensor::math::Matrix::new(ktensor::math::Vec2(2, 3), vec![0.0, 1.0, 2.0, 3.0, 4.0, 5.0]);
+    /// let matrix1 = ktensor::math::Matrix::new(ktensor::math::Vec2(2, 3), (0..6).map(|i| i as f64).collect());
     /// let float = 1.0;
     /// let matrix2 = matrix1 + float;
     /// assert_eq!(matrix2.get(ktensor::math::Vec2(0, 0)), 1.0);
@@ -260,7 +260,7 @@ impl <'a, 'b, T> Add<&'b T> for &'a Matrix<T> where T: Add<Output=T> + Copy {
     /// # Example
     ///
     /// ```
-    /// let matrix1 = ktensor::math::Matrix::new(ktensor::math::Vec2(2, 3), vec![0.0, 1.0, 2.0, 3.0, 4.0, 5.0]);
+    /// let matrix1 = ktensor::math::Matrix::new(ktensor::math::Vec2(2, 3), (0..6).map(|i| i as f64).collect());
     /// let float = 1.0;
     /// let matrix2 = &matrix1 + &float;
     /// assert_eq!(matrix1.get(ktensor::math::Vec2(0, 0)), 0.0);
@@ -294,8 +294,8 @@ impl <T> Mul<Matrix<T>> for Matrix<T> where T: Mul<Output=T> + Add<Output=T> + C
     /// # Example
     ///
     /// ```
-    /// let matrix1 = ktensor::math::Matrix::new(ktensor::math::Vec2(2, 3), vec![0.0, 1.0, 2.0, 3.0, 4.0, 5.0]);
-    /// let matrix2 = ktensor::math::Matrix::new(ktensor::math::Vec2(3, 2), vec![5.0, 4.0, 3.0, 2.0, 1.0, 0.0]);
+    /// let matrix1 = ktensor::math::Matrix::new(ktensor::math::Vec2(2, 3), (0..6).map(|i| i as f64).collect());
+    /// let matrix2 = ktensor::math::Matrix::new(ktensor::math::Vec2(3, 2), (0..6).map(|i| i as f64).rev().collect());
     /// let matrix3 = matrix1 * matrix2;
     /// assert_eq!(matrix3.len(), 4);
     /// assert_eq!(matrix3.get(ktensor::math::Vec2(0, 0)), 5.0);
@@ -331,8 +331,8 @@ impl <'a, 'b, T> Mul<&'b Matrix<T>> for &'a Matrix<T> where T: Mul<Output=T> + A
     /// # Example
     ///
     /// ```
-    /// let matrix1 = ktensor::math::Matrix::new(ktensor::math::Vec2(2, 3), vec![0.0, 1.0, 2.0, 3.0, 4.0, 5.0]);
-    /// let matrix2 = ktensor::math::Matrix::new(ktensor::math::Vec2(3, 2), vec![5.0, 4.0, 3.0, 2.0, 1.0, 0.0]);
+    /// let matrix1 = ktensor::math::Matrix::new(ktensor::math::Vec2(2, 3), (0..6).map(|i| i as f64).collect());
+    /// let matrix2 = ktensor::math::Matrix::new(ktensor::math::Vec2(3, 2), (0..6).map(|i| i as f64).rev().collect());
     /// let matrix3 = &matrix1 * &matrix2;
     /// assert_eq!(matrix3.len(), 4);
     /// assert_eq!(matrix1.get(ktensor::math::Vec2(0, 0)), 0.0);
@@ -370,7 +370,7 @@ impl <T> Mul<T> for Matrix<T> where T: Mul<Output=T> + Copy {
     /// # Example
     ///
     /// ```
-    /// let matrix1 = ktensor::math::Matrix::new(ktensor::math::Vec2(2, 3), vec![0.0, 1.0, 2.0, 3.0, 4.0, 5.0]);
+    /// let matrix1 = ktensor::math::Matrix::new(ktensor::math::Vec2(2, 3), (0..6).map(|i| i as f64).collect());
     /// let float = 2.0;
     /// let matrix2 = matrix1 * float;
     /// assert_eq!(matrix2.get(ktensor::math::Vec2(0, 2)), 4.0);
@@ -397,7 +397,7 @@ impl <'a, 'b, T> Mul<&'b T> for &'a Matrix<T> where T: Mul<Output=T> + Copy {
     /// # Example
     ///
     /// ```
-    /// let matrix1 = ktensor::math::Matrix::new(ktensor::math::Vec2(2, 3), vec![0.0, 1.0, 2.0, 3.0, 4.0, 5.0]);
+    /// let matrix1 = ktensor::math::Matrix::new(ktensor::math::Vec2(2, 3), (0..6).map(|i| i as f64).collect());
     /// let float = 2.0;
     /// let matrix2 = &matrix1 * &float;
     /// assert_eq!(matrix1.get(ktensor::math::Vec2(0, 2)), 2.0);
