@@ -75,8 +75,8 @@ impl <T> Matrix<T> where T: Copy {
     ///
     /// # Arguments
     ///
-    /// - `Vec2` - coordinates of the first corner in the tensor
-    /// - `Vec2` - coordinates of the second corner in the tensor
+    /// - `Vec2` - coordinates of the first corner
+    /// - `Vec2` - coordinates of the second corner
     ///
     /// # Example
     ///
@@ -89,6 +89,8 @@ impl <T> Matrix<T> where T: Copy {
     /// }
     /// ```
     pub fn get_slice(&self, Vec2(x1, y1): Vec2, Vec2(x2, y2): Vec2) -> Matrix<T> {
+        assert!(x1 < x2);
+        assert!(y1 < y2);
         let mut buf = Vec::<T>::with_capacity((x2-x1) * (y2-y1));
         for i in x1..x2 {
             for j in y1..y2 {
@@ -100,6 +102,54 @@ impl <T> Matrix<T> where T: Copy {
             dim: Vec2(x2-x1, y2-y1),
             buffer: buf
         }
+    }
+
+    /// Returns `Vec` of indicies from `(0, 0)` to `(x, y)` (inclusive and exclusive)
+    ///
+    /// # Arguments
+    ///
+    /// - `Vec2` - bottom corner of indicies
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// let matrix = ktensor::math::Matrix::new(ktensor::math::Vec2(3, 3), vec![0, 1, 2, 3, 4, 5, 6, 7, 8]);
+    /// let indicies = matrix.get_indicies(ktensor::math::Vec2(2, 2));
+    /// let matrix = matrix.to_flattened();
+    /// for &i in indicies.iter() {
+    ///     assert_eq!(i, matrix[i]);
+    /// }
+    /// ```
+    pub fn get_indicies(&self, Vec2(x, y): Vec2) -> Vec<usize> {
+        assert!(x-1 <= self.dim.0 && x > 0);
+        assert!(y-1 <= self.dim.1 && y > 0);
+        let mut buf = Vec::<usize>::with_capacity(x*y);
+        for i in 0..x {
+            for j in 0..y {
+                buf.push(i * self.dim.1 + j);
+            }
+        }
+        buf
+    }
+
+    /// Returns `Vec` of indicies across the entire `Matrix` with the specified stride length
+    ///
+    /// # Arguments
+    ///
+    /// - `stride` - length of stride
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// let matrix = ktensor::math::Matrix::new(ktensor::math::Vec2(4, 4), vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]);
+    /// let indicies = matrix.get_indicies_stride(2);
+    /// let matrix = matrix.to_flattened();
+    /// for &i in indicies.iter() {
+    ///     assert_eq!(i, matrix[i]);
+    /// }
+    /// ```
+    pub fn get_indicies_stride(&self, stride: usize) -> Vec<usize> {
+        self.get_indicies(Vec2(self.dim.0/stride, self.dim.1/stride)).iter().map(|&i| i*stride).collect()
     }
 }
 

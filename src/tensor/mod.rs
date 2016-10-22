@@ -55,6 +55,11 @@ impl Tensor<f64> {
             matrix: Matrix::new(dimensions, buf),
         }
     }
+
+    /// max_width = dim % stride + stride
+    pub fn get_convolutions(){
+
+    }
 }
 
 impl Tensor<f32> {
