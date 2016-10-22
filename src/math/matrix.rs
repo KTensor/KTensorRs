@@ -37,6 +37,11 @@ impl <T> Matrix<T> {
         self.buffer.len()
     }
 
+    /// Returns the dimensions of the `Matrix`
+    pub fn dim(&self) -> Vec2 {
+        self.dim
+    }
+
     /// Gives ownership to the buffer
     ///
     /// # Example
