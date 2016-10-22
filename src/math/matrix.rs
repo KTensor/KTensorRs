@@ -82,13 +82,13 @@ impl <T> Matrix<T> where T: Copy {
     ///
     /// ```
     /// let matrix = ktensor::math::Matrix::new(ktensor::math::Vec2(3, 3), (0..9).collect());
-    /// let slice = matrix.get_slice(ktensor::math::Vec2(1, 1), ktensor::math::Vec2(3, 3)).to_flattened();
+    /// let slice = matrix.get_submatrix(ktensor::math::Vec2(1, 1), ktensor::math::Vec2(3, 3)).to_flattened();
     /// let result = vec![4, 5, 7, 8];
     /// for (&i, &j) in slice.iter().zip(result.iter()) {
     ///     assert_eq!(i, j);
     /// }
     /// ```
-    pub fn get_slice(&self, Vec2(x1, y1): Vec2, Vec2(x2, y2): Vec2) -> Matrix<T> {
+    pub fn get_submatrix(&self, Vec2(x1, y1): Vec2, Vec2(x2, y2): Vec2) -> Matrix<T> {
         assert!(x1 < x2);
         assert!(y1 < y2);
         let mut buf = Vec::<T>::with_capacity((x2-x1) * (y2-y1));
