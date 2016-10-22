@@ -132,24 +132,28 @@ impl <T> Matrix<T> where T: Copy {
         buf
     }
 
-    /// Returns `Vec` of indicies across the entire `Matrix` with the specified stride length
+    /// Returns `Vec` of indicies across the entire `Matrix` up to (x, y) with the specified stride length
     ///
     /// # Arguments
     ///
+    /// - `Vec2` - number of strides in directions x, y
     /// - `stride` - length of stride
     ///
     /// # Example
     ///
     /// ```
-    /// let matrix = ktensor::math::Matrix::new(ktensor::math::Vec2(4, 4), vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]);
-    /// let indicies = matrix.get_indicies_stride(2);
+    /// let matrix = ktensor::math::Matrix::new(ktensor::math::Vec2(6, 6), (0..36).collect());
+    /// let indicies = matrix.get_indicies_stride(ktensor::math::Vec2(2, 2), 2);
     /// let matrix = matrix.to_flattened();
+    /// assert_eq!(indicies.len(), 4);
     /// for &i in indicies.iter() {
     ///     assert_eq!(i, matrix[i]);
     /// }
     /// ```
-    pub fn get_indicies_stride(&self, stride: usize) -> Vec<usize> {
-        self.get_indicies(Vec2(self.dim.0/stride, self.dim.1/stride)).iter().map(|&i| i*stride).collect()
+    pub fn get_indicies_stride(&self, Vec2(x, y): Vec2, stride: usize) -> Vec<usize> {
+        assert!(x <= self.dim.0/stride);
+        assert!(y <= self.dim.1/stride);
+        self.get_indicies(Vec2(x, y)).iter().map(|&i| i*stride).collect()
     }
 }
 
