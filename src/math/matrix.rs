@@ -36,9 +36,7 @@ impl <T> Matrix<T> {
     pub fn len(&self) -> usize {
         self.buffer.len()
     }
-}
 
-impl <T> Matrix<T> where T: Copy {
     /// Gives ownership to the buffer
     ///
     /// # Example
@@ -52,56 +50,6 @@ impl <T> Matrix<T> where T: Copy {
     /// ```
     pub fn to_flattened(self) -> Vec<T> {
         self.buffer
-    }
-
-    /// Returns value at `Vec2`
-    ///
-    /// # Arguments
-    ///
-    /// - `Vec2` - coordinates of the value in the `Matrix`
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// let matrix = ktensor::math::Matrix::new(ktensor::math::Vec2(2, 3), (0..6).collect());
-    /// assert_eq!(matrix.get(ktensor::math::Vec2(1, 2)), 5);
-    /// assert_eq!(matrix.get(ktensor::math::Vec2(1, 2)), 5);
-    /// ```
-    pub fn get(&self, Vec2(x, y): Vec2) -> T {
-        self.buffer[x * self.dim.1 + y]
-    }
-
-    /// Returns Matrix of values from [vec1 to vec2) (inclusive and exclusive)
-    ///
-    /// # Arguments
-    ///
-    /// - `Vec2` - coordinates of the first corner
-    /// - `Vec2` - coordinates of the second corner
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// let matrix = ktensor::math::Matrix::new(ktensor::math::Vec2(3, 3), (0..9).collect());
-    /// let slice = matrix.get_submatrix(ktensor::math::Vec2(1, 1), ktensor::math::Vec2(3, 3)).to_flattened();
-    /// let result = vec![4, 5, 7, 8];
-    /// for (&i, &j) in slice.iter().zip(result.iter()) {
-    ///     assert_eq!(i, j);
-    /// }
-    /// ```
-    pub fn get_submatrix(&self, Vec2(x1, y1): Vec2, Vec2(x2, y2): Vec2) -> Matrix<T> {
-        assert!(x1 < x2);
-        assert!(y1 < y2);
-        let mut buf = Vec::<T>::with_capacity((x2-x1) * (y2-y1));
-        for i in x1..x2 {
-            for j in y1..y2 {
-                buf.push(self.buffer[i * self.dim.1 + j]);
-            }
-        }
-
-        Matrix {
-            dim: Vec2(x2-x1, y2-y1),
-            buffer: buf
-        }
     }
 
     /// Returns `Vec` of indicies from `(0, 0)` to `(x, y)` (inclusive and exclusive)
@@ -154,6 +102,58 @@ impl <T> Matrix<T> where T: Copy {
         assert!(x <= self.dim.0/stride);
         assert!(y <= self.dim.1/stride);
         self.get_indicies(Vec2(x, y)).iter().map(|&i| i*stride).collect()
+    }
+}
+
+impl <T> Matrix<T> where T: Copy {
+    /// Returns value at `Vec2`
+    ///
+    /// # Arguments
+    ///
+    /// - `Vec2` - coordinates of the value in the `Matrix`
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// let matrix = ktensor::math::Matrix::new(ktensor::math::Vec2(2, 3), (0..6).collect());
+    /// assert_eq!(matrix.get(ktensor::math::Vec2(1, 2)), 5);
+    /// assert_eq!(matrix.get(ktensor::math::Vec2(1, 2)), 5);
+    /// ```
+    pub fn get(&self, Vec2(x, y): Vec2) -> T {
+        self.buffer[x * self.dim.1 + y]
+    }
+
+    /// Returns Matrix of values from [vec1 to vec2) (inclusive and exclusive)
+    ///
+    /// # Arguments
+    ///
+    /// - `Vec2` - coordinates of the first corner
+    /// - `Vec2` - coordinates of the second corner
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// let matrix = ktensor::math::Matrix::new(ktensor::math::Vec2(3, 3), (0..9).collect());
+    /// let slice = matrix.get_submatrix(ktensor::math::Vec2(1, 1), ktensor::math::Vec2(3, 3)).to_flattened();
+    /// let result = vec![4, 5, 7, 8];
+    /// for (&i, &j) in slice.iter().zip(result.iter()) {
+    ///     assert_eq!(i, j);
+    /// }
+    /// ```
+    pub fn get_submatrix(&self, Vec2(x1, y1): Vec2, Vec2(x2, y2): Vec2) -> Matrix<T> {
+        assert!(x1 < x2);
+        assert!(y1 < y2);
+        let mut buf = Vec::<T>::with_capacity((x2-x1) * (y2-y1));
+        for i in x1..x2 {
+            for j in y1..y2 {
+                buf.push(self.buffer[i * self.dim.1 + j]);
+            }
+        }
+
+        Matrix {
+            dim: Vec2(x2-x1, y2-y1),
+            buffer: buf
+        }
     }
 }
 
