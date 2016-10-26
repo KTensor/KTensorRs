@@ -5,18 +5,23 @@ use node::{Graph};
 /// Context Map
 pub struct Context<T> {
     /// map of nodeids and values
-    map: HashMap<&'static str, Vec<Tensor<T>>>,
+    map: HashMap<&'static str, Tensor<T>>,
 }
 
 impl <T> Context<T> {
-    /// creates a new `Context`
-    ///
-    /// # Example
-    ///
-    /// ```
-    ///
-    /// ```
-    pub fn new(context_vec: Vec<(&Graph<T>, Vec<Tensor<T>>)>) -> Context<T> {
+    pub fn new() -> Context<T> {
+        Context {
+            map: HashMap::new(),
+        }
+    }
+
+    pub fn with_capacity(size: usize) -> Context<T> {
+        Context {
+            map: HashMap::with_capacity(size),
+        }
+    }
+
+    pub fn from_vec(context_vec: Vec<(&Graph<T>, Tensor<T>)>) -> Context<T> {
         let mut context_map = HashMap::with_capacity(context_vec.len());
 
         for (node, batch) in context_vec {
@@ -28,22 +33,11 @@ impl <T> Context<T> {
         }
     }
 
-    /// gets a value linked to a node
-    ///
-    /// # Arguments
-    ///
-    /// - `node` - a `Node`
-    ///
-    /// # Example
-    ///
-    /// ```
-    ///
-    /// ```
-    pub fn get(&self, node: &Graph<T>) -> Option<&Vec<Tensor<T>>> {
+    pub fn get(&self, node: &Graph<T>) -> Option<&Tensor<T>> {
         self.map.get(node.get_id())
     }
 
-    pub fn set(&mut self, node: &Graph<T>, tensor: Vec<Tensor<T>>) {
+    pub fn set(&mut self, node: &Graph<T>, tensor: Tensor<T>) {
         self.map.insert(node.get_id(), tensor);
     }
 }
