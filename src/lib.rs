@@ -8,8 +8,12 @@
 
 pub mod math;
 pub mod tensor;
+pub mod context;
+pub mod node;
 
+pub use context::{Context};
 pub use tensor::{Tensor};
+pub use node::{Node};
 
 /// should return the static string `"Hello World!"`
 ///
