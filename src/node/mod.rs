@@ -1,10 +1,5 @@
-/// Computational Node for a Graph
-pub struct Node {
-    nodeid: &'static str
-}
+pub mod runnable;
+pub mod node;
 
-impl Node {
-    pub fn get_id(&self) -> &'static str {
-        self.nodeid
-    }
-}
+pub use self::runnable::{Runnable};
+pub use self::node::{Node};

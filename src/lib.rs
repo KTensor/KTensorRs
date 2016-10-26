@@ -13,7 +13,7 @@ pub mod node;
 
 pub use context::{Context};
 pub use tensor::{Tensor};
-pub use node::{Node};
+pub use node::{Node, Runnable};
 
 /// should return the static string `"Hello World!"`
 ///
