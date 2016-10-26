@@ -1,5 +1,8 @@
 # TODO
 
+- [ ] Tests
+  - [ ] Node
+  - [ ] Context
 - [ ] Node structs
   - [ ] functions to create nodes
   - [ ] nodes should take in context and state

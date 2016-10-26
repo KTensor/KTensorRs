@@ -1,6 +1,6 @@
-use std::collections::HashMap;
+use std::collections::{HashMap};
 use tensor::{Tensor};
-use node::{Node};
+use node::{Graph};
 
 /// Context Map
 pub struct Context<T> {
@@ -15,9 +15,8 @@ impl <T> Context<T> {
     ///
     /// ```
     ///
-    /// let context = ktensor::Context::new(vec![]);
     /// ```
-    pub fn new(context_vec: Vec<(&Node<T>, Vec<Tensor<T>>)>) -> Context<T> {
+    pub fn new(context_vec: Vec<(&Graph<T>, Vec<Tensor<T>>)>) -> Context<T> {
         let mut context_map = HashMap::with_capacity(context_vec.len());
 
         for (node, batch) in context_vec {
@@ -40,11 +39,11 @@ impl <T> Context<T> {
     /// ```
     ///
     /// ```
-    pub fn get(&self, node: &Node<T>) -> Option<&Vec<Tensor<T>>> {
+    pub fn get(&self, node: &Graph<T>) -> Option<&Vec<Tensor<T>>> {
         self.map.get(node.get_id())
     }
 
-    pub fn set(&mut self, node: &Node<T>, tensor: Vec<Tensor<T>>) {
+    pub fn set(&mut self, node: &Graph<T>, tensor: Vec<Tensor<T>>) {
         self.map.insert(node.get_id(), tensor);
     }
 }

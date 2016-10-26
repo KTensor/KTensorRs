@@ -1,5 +1,5 @@
-pub mod runnable;
-pub mod node;
+pub mod graph;
+pub mod junction;
 
-pub use self::runnable::{Runnable};
-pub use self::node::{Node};
+pub use self::graph::{Graph};
+pub use self::junction::{Node};
