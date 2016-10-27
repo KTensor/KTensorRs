@@ -3,6 +3,6 @@ use tensor::{Tensor};
 
 pub trait Graph<T> {
     fn get_id(&self) -> &'static str;
-    fn run(&self, state: &Context<T>, context: &Context<T>) -> Tensor<T>;
-    fn train(&self, state: &Context<T>, context: &Context<T>, history: &mut Context<T>, deltas: &mut Context<T>);
+    fn run(&self, state: &Context<T>, variable: &Context<T>) -> Tensor<T>;
+    fn train(&self, state: &Context<T>, variable: &Context<T>, deltas: &mut Context<T>);
 }
