@@ -9,7 +9,7 @@ pub struct Matrix<T> {
     /// vector of rows and columns
     dim: Vec2,
     /// vector to get items from buffer
-    vec_length: Vec2,
+    traverse_vec: Vec2,
     /// `Vector` of values in the `Matrix`
     buffer: Vec<T>,
 }
@@ -31,7 +31,7 @@ impl <T> Matrix<T> {
         let Vec2(_, y) = dimensions;
         Matrix {
             dim: dimensions,
-            vec_length: Vec2(y, 1),
+            traverse_vec: Vec2(y, 1),
             buffer: buffer,
         }
     }
@@ -72,9 +72,9 @@ impl <T> Matrix<T> {
     /// ```
     pub fn transpose(&mut self) {
         let Vec2(dim_x, dim_y) = self.dim;
-        let Vec2(x, y) = self.vec_length;
+        let Vec2(x, y) = self.traverse_vec;
         self.dim = Vec2(dim_y, dim_x);
-        self.vec_length = Vec2(y, x);
+        self.traverse_vec = Vec2(y, x);
     }
 
     /// Returns `Vec` of indicies from `(0, 0)` to `(x, y)` (inclusive and exclusive)
@@ -99,7 +99,7 @@ impl <T> Matrix<T> {
         let mut buf = Vec::<usize>::with_capacity(x*y);
         for i in 0..x {
             for j in 0..y {
-                buf.push(i * self.vec_length.0 + j * self.vec_length.1);
+                buf.push(i * self.traverse_vec.0 + j * self.traverse_vec.1);
             }
         }
         buf
@@ -145,7 +145,7 @@ impl <T> Matrix<T> where T: Copy {
     /// assert_eq!(matrix.get(ktensor::math::Vec2(1, 2)), 5);
     /// ```
     pub fn get(&self, Vec2(x, y): Vec2) -> T {
-        self.buffer[x * self.vec_length.0 + y * self.vec_length.1]
+        self.buffer[x * self.traverse_vec.0 + y * self.traverse_vec.1]
     }
 
     /// Returns Matrix of values from [vec1 to vec2) (inclusive and exclusive)
@@ -177,7 +177,7 @@ impl <T> Matrix<T> where T: Copy {
 
         Matrix {
             dim: Vec2(x2-x1, y2-y1),
-            vec_length: Vec2(y2-y1, 1),
+            traverse_vec: Vec2(y2-y1, 1),
             buffer: buf,
         }
     }
