@@ -37,7 +37,7 @@ impl <T> Tensor<T> {
         }
     }
 
-    /// /// Returns the dimensions of the `Tensor`
+    /// Returns the dimensions of the `Tensor`
     pub fn dim(&self) -> Vec2 {
         self.dim
     }
@@ -56,6 +56,24 @@ impl <T> Tensor<T> {
     /// ```
     pub fn to_flattened(self) -> Vec<T> {
         self.matrix.to_flattened()
+    }
+
+    /// Transpose `Tensor`
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// let tensor = ktensor::Tensor::new(ktensor::math::Vec2(2, 3), ktensor::math::Matrix::new(ktensor::math::Vec2(2, 3), (0..6).collect()));
+    /// let mut tensor2 = ktensor::Tensor::new(ktensor::math::Vec2(2, 3), ktensor::math::Matrix::new(ktensor::math::Vec2(2, 3), (0..6).collect()));
+    /// tensor2.transpose();
+    /// let tensor3 = tensor * tensor2;
+    /// let tensor3 = tensor3.to_flattened();
+    /// assert_eq!(tensor3[2], 14);
+    /// ```
+    pub fn transpose(&mut self) {
+        let Vec2(x, y) = self.dim;
+        self.matrix.transpose();
+        self.dim = Vec2(y, x);
     }
 
     /// max_num_strides = (dim - width) / stride + 1
@@ -357,5 +375,36 @@ impl <'a, 'b, T> Mul<&'b T> for &'a Tensor<T> where T: Mul<Output=T> + Copy {
     /// ```
     fn mul(self, rhs: &'b T) -> Tensor<T> {
         Tensor::new(self.dim, &self.matrix * rhs)
+    }
+}
+
+
+///////////////////////
+// Hadamard Product  //
+///////////////////////
+
+impl <'a, T> Tensor<T> where T: Mul<Output=T> + Copy {
+    /// Hadamard Product of Tensors by reference
+    ///
+    /// # Arguments
+    ///
+    /// - `self` - this tensor reference
+    /// - `rhs` - another tensor reference
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// let tensor1 = ktensor::Tensor::new(ktensor::math::Vec2(2, 3), ktensor::math::Matrix::new(ktensor::math::Vec2(2, 3), (0..6).map(|i| i as f64).collect()));
+    /// let tensor2 = ktensor::Tensor::new(ktensor::math::Vec2(2, 3), ktensor::math::Matrix::new(ktensor::math::Vec2(2, 3), (0..6).map(|i| i as f64).rev().collect()));
+    /// let tensor3 = tensor1.product(&tensor2);
+    /// let tensor1 = tensor1.to_flattened();
+    /// let tensor2 = tensor2.to_flattened();
+    /// let tensor3 = tensor3.to_flattened();
+    /// assert_eq!(tensor1[2], 2.0);
+    /// assert_eq!(tensor2[2], 3.0);
+    /// assert_eq!(tensor3[2], 6.0);
+    /// ```
+    pub fn product(&self, rhs: &'a Tensor<T>) -> Tensor<T> {
+        Tensor::new(self.dim, self.matrix.product(&rhs.matrix))
     }
 }

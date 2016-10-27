@@ -8,6 +8,8 @@ pub struct Vec2(pub usize, pub usize);
 pub struct Matrix<T> {
     /// vector of rows and columns
     dim: Vec2,
+    /// vector to get items from buffer
+    vec_length: Vec2,
     /// `Vector` of values in the `Matrix`
     buffer: Vec<T>,
 }
@@ -26,8 +28,10 @@ impl <T> Matrix<T> {
     /// let matrix = ktensor::math::Matrix::new(ktensor::math::Vec2(2, 3), (0..6).collect());
     /// ```
     pub fn new(dimensions: Vec2, buffer: Vec<T>) -> Matrix<T> {
+        let Vec2(_, y) = dimensions;
         Matrix {
             dim: dimensions,
+            vec_length: Vec2(y, 1),
             buffer: buffer,
         }
     }
@@ -57,6 +61,22 @@ impl <T> Matrix<T> {
         self.buffer
     }
 
+    /// Consumes `Matrix` and returns transposed `Matrix`
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// let mut vector = ktensor::math::Matrix::new(ktensor::math::Vec2(2, 3), (0..6).collect());
+    /// vector.transpose();
+    /// assert_eq!(vector.get(ktensor::math::Vec2(2, 0)), 2);
+    /// ```
+    pub fn transpose(&mut self) {
+        let Vec2(dim_x, dim_y) = self.dim;
+        let Vec2(x, y) = self.vec_length;
+        self.dim = Vec2(dim_y, dim_x);
+        self.vec_length = Vec2(y, x);
+    }
+
     /// Returns `Vec` of indicies from `(0, 0)` to `(x, y)` (inclusive and exclusive)
     ///
     /// # Arguments
@@ -79,7 +99,7 @@ impl <T> Matrix<T> {
         let mut buf = Vec::<usize>::with_capacity(x*y);
         for i in 0..x {
             for j in 0..y {
-                buf.push(i * self.dim.1 + j);
+                buf.push(x * self.vec_length.0 + y * self.vec_length.1);
             }
         }
         buf
@@ -125,7 +145,7 @@ impl <T> Matrix<T> where T: Copy {
     /// assert_eq!(matrix.get(ktensor::math::Vec2(1, 2)), 5);
     /// ```
     pub fn get(&self, Vec2(x, y): Vec2) -> T {
-        self.buffer[x * self.dim.1 + y]
+        self.buffer[x * self.vec_length.0 + y * self.vec_length.1]
     }
 
     /// Returns Matrix of values from [vec1 to vec2) (inclusive and exclusive)
@@ -151,13 +171,14 @@ impl <T> Matrix<T> where T: Copy {
         let mut buf = Vec::<T>::with_capacity((x2-x1) * (y2-y1));
         for i in x1..x2 {
             for j in y1..y2 {
-                buf.push(self.buffer[i * self.dim.1 + j]);
+                buf.push(self.get(Vec2(i, j)));
             }
         }
 
         Matrix {
             dim: Vec2(x2-x1, y2-y1),
-            buffer: buf
+            vec_length: Vec2(y2-y1, 1),
+            buffer: buf,
         }
     }
 }
@@ -186,10 +207,13 @@ impl <T> Add<Matrix<T>> for Matrix<T> where T: Add<Output=T> + Copy {
     /// assert_eq!(matrix3.get(ktensor::math::Vec2(0, 0)), 5.0);
     /// ```
     fn add(self, rhs: Matrix<T>) -> Matrix<T> {
-        assert_eq!(self.len(), rhs.len());
+        assert_eq!(self.dim.0, rhs.dim.0);
+        assert_eq!(self.dim.1, rhs.dim.1);
         let mut buffer = Vec::with_capacity(self.len());
-        for (&i, &j) in self.buffer.iter().zip(rhs.buffer.iter()) {
-            buffer.push(i + j);
+        for i in 0..self.dim.0 {
+            for j in 0..self.dim.1 {
+                buffer.push(self.get(Vec2(i, j)) + rhs.get(Vec2(i, j)));
+            }
         }
         Matrix::new(self.dim, buffer)
     }
@@ -216,10 +240,13 @@ impl <'a, 'b, T> Add<&'b Matrix<T>> for &'a Matrix<T> where T: Add<Output=T> + C
     /// assert_eq!(matrix3.get(ktensor::math::Vec2(0, 0)), 5.0);
     /// ```
     fn add(self, rhs: &'b Matrix<T>) -> Matrix<T> {
-        assert_eq!(self.len(), rhs.len());
+        assert_eq!(self.dim.0, rhs.dim.0);
+        assert_eq!(self.dim.1, rhs.dim.1);
         let mut buffer = Vec::with_capacity(self.len());
-        for (&i, &j) in self.buffer.iter().zip(rhs.buffer.iter()) {
-            buffer.push(i + j);
+        for i in 0..self.dim.0 {
+            for j in 0..self.dim.1 {
+                buffer.push(self.get(Vec2(i, j)) + rhs.get(Vec2(i, j)));
+            }
         }
         Matrix::new(self.dim, buffer)
     }
@@ -413,6 +440,42 @@ impl <'a, 'b, T> Mul<&'b T> for &'a Matrix<T> where T: Mul<Output=T> + Copy {
         let mut buffer = Vec::with_capacity(self.len());
         for &i in self.buffer.iter() {
             buffer.push(i * rhs);
+        }
+        Matrix::new(self.dim, buffer)
+    }
+}
+
+
+///////////////////////
+// Hadamard Product  //
+///////////////////////
+
+impl <'a, T> Matrix<T> where T: Mul<Output=T> + Copy {
+    /// Hadamard Product of Matricies by reference
+    ///
+    /// # Arguments
+    ///
+    /// - `self` - this matrix reference
+    /// - `rhs` - another matrix reference
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// let matrix1 = ktensor::math::Matrix::new(ktensor::math::Vec2(2, 3), (0..6).map(|i| i as f64).collect());
+    /// let matrix2 = ktensor::math::Matrix::new(ktensor::math::Vec2(2, 3), (0..6).map(|i| i as f64).rev().collect());
+    /// let matrix3 = &matrix1.product(&matrix2);
+    /// assert_eq!(matrix1.get(ktensor::math::Vec2(0, 2)), 2.0);
+    /// assert_eq!(matrix2.get(ktensor::math::Vec2(0, 2)), 3.0);
+    /// assert_eq!(matrix3.get(ktensor::math::Vec2(0, 2)), 6.0);
+    /// ```
+    pub fn product(&self, rhs: &'a Matrix<T>) -> Matrix<T> {
+        assert_eq!(self.dim.0, rhs.dim.0);
+        assert_eq!(self.dim.1, rhs.dim.1);
+        let mut buffer = Vec::with_capacity(self.len());
+        for i in 0..self.dim.0 {
+            for j in 0..self.dim.1 {
+                buffer.push(self.get(Vec2(i, j)) * rhs.get(Vec2(i, j)));
+            }
         }
         Matrix::new(self.dim, buffer)
     }
