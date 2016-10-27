@@ -88,9 +88,9 @@ impl <T> Matrix<T> {
     /// ```
     /// let matrix = ktensor::math::Matrix::new(ktensor::math::Vec2(3, 3), (0..9).collect());
     /// let indicies = matrix.get_indicies(ktensor::math::Vec2(2, 2));
-    /// let matrix = matrix.to_flattened();
-    /// for &i in indicies.iter() {
-    ///     assert_eq!(i, matrix[i]);
+    /// let result = vec![0, 1, 3, 4];
+    /// for (&i, &j) in indicies.iter().zip(result.iter()) {
+    ///     assert_eq!(i, j);
     /// }
     /// ```
     pub fn get_indicies(&self, Vec2(x, y): Vec2) -> Vec<usize> {
