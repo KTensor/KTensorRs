@@ -99,7 +99,7 @@ impl <T> Matrix<T> {
         let mut buf = Vec::<usize>::with_capacity(x*y);
         for i in 0..x {
             for j in 0..y {
-                buf.push(x * self.vec_length.0 + y * self.vec_length.1);
+                buf.push(i * self.vec_length.0 + j * self.vec_length.1);
             }
         }
         buf
