@@ -33,21 +33,18 @@ impl <T> Graph<T> for Node<T> where T: Copy + Mul<Output=T> + Add<Output=T> {
     }
 
     fn train(&self, state: &Context<T>, variable: &Context<T>, history: &mut Context<T>) {
-        let vec: Vec<&Tensor<T>> = self.param.iter().map(|node| {
-            node.train(state, variable, history);
-            match history.get(&**node) {
+        let tensor = self.forward_pass(state, variable, history);
+        history.set(self.get_id(), tensor);
+    }
+
+    fn forward_pass(&self, state: &Context<T>, variable: &Context<T>, history: &Context<T>) -> Tensor<T> {
+        (self.op_train)(self.param.iter().map(|node| {
+            node.forward_pass(state, variable, history);
+            match history.get(node.get_id()) {
                 Some(x) => x,
                 None => panic!("Node {} does not exist in history", node.get_id()),
             }
-        }).collect();
-        // for node in self.param.iter() {
-        //     node.train(state, variable, history);
-        //     vec.push(match history.get(&**node) {
-        //         Some(x) => x,
-        //         None => panic!("Node {} does not exist in history", node.get_id()),
-        //     });
-        // }
-        // history.set(self, (self.op_train)(vec));
+        }).collect())
     }
 
     fn backward_pass(&self, gradient: &Tensor<T>, learning_rate: &f64) {

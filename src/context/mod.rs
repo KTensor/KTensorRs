@@ -33,11 +33,11 @@ impl <T> Context<T> {
         }
     }
 
-    pub fn get(&self, node: &Graph<T>) -> Option<&Tensor<T>> {
-        self.map.get(node.get_id())
+    pub fn get(&self, nodeid: &'static str) -> Option<&Tensor<T>> {
+        self.map.get(nodeid)
     }
 
-    pub fn set(&mut self, node: &Graph<T>, tensor: Tensor<T>) {
-        self.map.insert(node.get_id(), tensor);
+    pub fn set(&mut self, nodeid: &'static str, tensor: Tensor<T>) {
+        self.map.insert(nodeid, tensor);
     }
 }
