@@ -47,7 +47,7 @@ impl <T> Graph<T> for Node<T> where T: Copy + Mul<Output=T> + Add<Output=T> {
         }).collect())
     }
 
-    fn backward_pass(&self, gradient: &Tensor<T>, learning_rate: &f64) {
+    fn backward_pass(&self, state: &mut Context<T>, variable: &Context<T>, history: &Context<T>, gradient: &Tensor<T>, learning_rate: &f64) {
         for node in self.param.iter() {
 
         }
