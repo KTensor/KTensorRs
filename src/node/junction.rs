@@ -12,6 +12,17 @@ pub struct Node<T> {
 }
 
 impl <T> Node<T> {
+    /// computation node
+    ///
+    /// # Arguments
+    ///
+    /// if this node is z = f(x, y):
+    ///
+    /// - `node_id`
+    /// - `operation` - f
+    /// - `operation_train`
+    /// - `operation_prime` - f_x,y which takes in a gradient dC/dz and inputs x, y; outputs gradients dC/dx, dC/dy
+    /// - `parameter` - Vec<(x, y)>
     pub fn new(&self, node_id: &'static str, operation: Box<Fn(Vec<Tensor<T>>) -> Tensor<T>>, operation_train: Box<Fn(Vec<&Tensor<T>>) -> Tensor<T>>, operation_prime: Box<Fn(&Tensor<T>, Vec<&Tensor<T>>) -> Vec<Tensor<T>>>, parameter: Vec<Box<Graph<T>>>) -> Node<T> {
         Node {
             id: node_id,
