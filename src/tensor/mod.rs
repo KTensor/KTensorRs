@@ -86,6 +86,15 @@ impl <T> Tensor<T> where T: Copy {
     }
 }
 
+impl <T> Clone for Tensor<T> where T: Copy {
+    fn clone(&self) -> Tensor<T> {
+        Tensor {
+            dim: self.dim,
+            matrix: self.matrix.clone(),
+        }
+    }
+}
+
 impl Tensor<f64> {
     /// generates a random valued `Tensor` with a standard deviation of 1
     ///

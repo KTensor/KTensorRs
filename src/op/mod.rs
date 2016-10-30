@@ -1,3 +1,5 @@
-mod matrix_dot;
+mod dot;
+mod add;
 
-pub use self::matrix_dot::{dot};
+pub use self::dot::{dot};
+pub use self::add::{add};

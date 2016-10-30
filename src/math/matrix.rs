@@ -186,6 +186,16 @@ impl <T> Matrix<T> where T: Copy {
     }
 }
 
+impl <T> Clone for Matrix<T> where T: Copy {
+    fn clone(&self) -> Matrix<T> {
+        Matrix {
+            dim: self.dim,
+            traverse_vec: self.traverse_vec,
+            buffer: self.buffer.clone(),
+        }
+    }
+}
+
 
 //////////////
 // Addition //
