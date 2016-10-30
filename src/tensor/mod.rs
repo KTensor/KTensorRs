@@ -58,27 +58,31 @@ impl <T> Tensor<T> {
         self.matrix.to_flattened()
     }
 
+    /// max_num_strides = (dim - width) / stride + 1
+    pub fn get_convolutions(){
+
+    }
+}
+
+impl <T> Tensor<T> where T: Copy {
     /// Transpose `Tensor`
     ///
     /// # Example
     ///
     /// ```
     /// let tensor = ktensor::Tensor::new(ktensor::math::Vec2(2, 3), ktensor::math::Matrix::new(ktensor::math::Vec2(2, 3), (0..6).collect()));
-    /// let mut tensor2 = ktensor::Tensor::new(ktensor::math::Vec2(2, 3), ktensor::math::Matrix::new(ktensor::math::Vec2(2, 3), (0..6).collect()));
-    /// tensor2.transpose();
+    /// let tensor2 = ktensor::Tensor::new(ktensor::math::Vec2(2, 3), ktensor::math::Matrix::new(ktensor::math::Vec2(2, 3), (0..6).collect()));
+    /// let tensor2 = tensor2.transpose();
     /// let tensor3 = tensor * tensor2;
     /// let tensor3 = tensor3.to_flattened();
     /// assert_eq!(tensor3[2], 14);
     /// ```
-    pub fn transpose(&mut self) {
+    pub fn transpose(&self) -> Tensor<T> {
         let Vec2(x, y) = self.dim;
-        self.matrix.transpose();
-        self.dim = Vec2(y, x);
-    }
-
-    /// max_num_strides = (dim - width) / stride + 1
-    pub fn get_convolutions(){
-
+        Tensor {
+            dim: Vec2(y, x),
+            matrix: self.matrix.transpose(),
+        }
     }
 }
 

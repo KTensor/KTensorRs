@@ -1,13 +1,13 @@
-use std::ops::{Fn, Mul, Add};
+use std::ops::{Mul, Add};
 use context::{Context};
 use tensor::{Tensor};
 use node::{Graph};
 
 pub struct Node<T> {
     id: &'static str,
-    op: Box<Fn(Vec<Tensor<T>>) -> Tensor<T>>,
-    op_train: Box<Fn(Vec<&Tensor<T>>) -> Tensor<T>>,
-    op_prime: Box<Fn(&Tensor<T>, Vec<&Tensor<T>>) -> Vec<Tensor<T>>>,
+    op: fn(Vec<Tensor<T>>) -> Tensor<T>,
+    op_train: fn(Vec<&Tensor<T>>) -> Tensor<T>,
+    op_prime: fn(&Tensor<T>, Vec<&Tensor<T>>) -> Vec<Tensor<T>>,
     param: Vec<Box<Graph<T>>>,
 }
 
@@ -23,7 +23,7 @@ impl <T> Node<T> {
     /// - `operation_train`
     /// - `operation_prime` - f_x,y which takes in a gradient dC/dz and inputs x, y; outputs gradients dC/dx, dC/dy
     /// - `parameter` - Vec<(x, y)>
-    pub fn new(node_id: &'static str, operation: Box<Fn(Vec<Tensor<T>>) -> Tensor<T>>, operation_train: Box<Fn(Vec<&Tensor<T>>) -> Tensor<T>>, operation_prime: Box<Fn(&Tensor<T>, Vec<&Tensor<T>>) -> Vec<Tensor<T>>>, parameter: Vec<Box<Graph<T>>>) -> Node<T> {
+    pub fn new(node_id: &'static str, operation: fn(Vec<Tensor<T>>) -> Tensor<T>, operation_train: fn(Vec<&Tensor<T>>) -> Tensor<T>, operation_prime: fn(&Tensor<T>, Vec<&Tensor<T>>) -> Vec<Tensor<T>>, parameter: Vec<Box<Graph<T>>>) -> Node<T> {
         Node {
             id: node_id,
             op: operation,

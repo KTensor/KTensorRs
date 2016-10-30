@@ -61,22 +61,6 @@ impl <T> Matrix<T> {
         self.buffer
     }
 
-    /// Consumes `Matrix` and returns transposed `Matrix`
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// let mut vector = ktensor::math::Matrix::new(ktensor::math::Vec2(2, 3), (0..6).collect());
-    /// vector.transpose();
-    /// assert_eq!(vector.get(ktensor::math::Vec2(2, 0)), 2);
-    /// ```
-    pub fn transpose(&mut self) {
-        let Vec2(dim_x, dim_y) = self.dim;
-        let Vec2(x, y) = self.traverse_vec;
-        self.dim = Vec2(dim_y, dim_x);
-        self.traverse_vec = Vec2(y, x);
-    }
-
     /// Returns `Vec` of indicies from `(0, 0)` to `(x, y)` (inclusive and exclusive)
     ///
     /// # Arguments
@@ -179,6 +163,25 @@ impl <T> Matrix<T> where T: Copy {
             dim: Vec2(x2-x1, y2-y1),
             traverse_vec: Vec2(y2-y1, 1),
             buffer: buf,
+        }
+    }
+
+    /// Consumes `Matrix` and returns transposed `Matrix`
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// let vector = ktensor::math::Matrix::new(ktensor::math::Vec2(2, 3), (0..6).collect());
+    /// let vector = vector.transpose();
+    /// assert_eq!(vector.get(ktensor::math::Vec2(2, 0)), 2);
+    /// ```
+    pub fn transpose(&self) -> Matrix<T> {
+        let Vec2(dim_x, dim_y) = self.dim;
+        let Vec2(x, y) = self.traverse_vec;
+        Matrix {
+            dim: Vec2(dim_y, dim_x),
+            traverse_vec: Vec2(y, x),
+            buffer: self.buffer.clone(),
         }
     }
 }
