@@ -43,14 +43,9 @@ impl <T> Graph<T> for Node<T> where T: Copy + Mul<Output=T> + Add<Output=T> {
         (self.op)(self.param.iter().map(|node| node.run(state, variable)).collect())
     }
 
-    fn train(&self, state: &Context<T>, variable: &Context<T>, history: &mut Context<T>) {
-        let tensor = self.forward_pass(state, variable, history);
-        history.set(self.get_id(), tensor);
-    }
-
-    fn forward_pass(&self, state: &Context<T>, variable: &Context<T>, history: &Context<T>) -> Tensor<T> {
+    fn forward_pass(&self, state: &Context<T>, variable: &Context<T>, history: &mut Context<T>) -> Tensor<T> {
         (self.op_train)(self.param.iter().map(|node| {
-            node.forward_pass(state, variable, history);
+            node.train(state, variable, history);
             match history.get(node.get_id()) {
                 Some(x) => x,
                 None    => panic!("Node {} does not exist in history", node.get_id()),
@@ -58,7 +53,7 @@ impl <T> Graph<T> for Node<T> where T: Copy + Mul<Output=T> + Add<Output=T> {
         }).collect())
     }
 
-    fn backward_pass(&self, state: &mut Context<T>, variable: &Context<T>, history: &Context<T>, gradient: &Tensor<T>, learning_rate: &f64) {
+    fn backward_pass(&self, state: &mut Context<T>, variable: &Context<T>, history: &Context<T>, gradient: &Tensor<T>, learning_rate: &T) {
         let deltas = (self.op_prime)(gradient, self.param.iter().map(|node| match history.get(node.get_id()) {
             Some(x) => x,
             None    => panic!("Node {} does not exist in history", node.get_id()),
