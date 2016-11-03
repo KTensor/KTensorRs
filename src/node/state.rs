@@ -21,14 +21,14 @@ impl <T> Graph<T> for State where T: Copy + Mul<Output=T> + Add<Output=T> {
     }
 
     fn run(&self, state: &Context<T>, variable: &Context<T>) -> Tensor<T> {
-        (match state.get(self.id) {
-            Some(x) => x,
+        match state.get(self.get_id()) {
+            Some(x) => x.clone(),
             None    => panic!("State {} does not exist in state", self.get_id()),
-        }).clone()
+        }
     }
 
     fn forward_pass(&self, state: &Context<T>, variable: &Context<T>, history: &mut Context<T>) -> Tensor<T> {
-        match state.get(self.id) {
+        match state.get(self.get_id()) {
             Some(x) => x.clone(),
             None    => panic!("State {} does not exist in state", self.get_id()),
         }

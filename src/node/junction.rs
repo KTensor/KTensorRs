@@ -45,11 +45,7 @@ impl <T> Graph<T> for Node<T> where T: Copy + Mul<Output=T> + Add<Output=T> {
 
     fn forward_pass(&self, state: &Context<T>, variable: &Context<T>, history: &mut Context<T>) -> Tensor<T> {
         (self.op_train)(self.param.iter().map(|node| {
-            node.train(state, variable, history);
-            match history.get(node.get_id()) {
-                Some(x) => x,
-                None    => panic!("Node {} does not exist in history", node.get_id()),
-            }
+            node.train(state, variable, history)
         }).collect())
     }
 
