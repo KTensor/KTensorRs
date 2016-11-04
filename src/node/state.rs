@@ -20,29 +20,26 @@ impl <T> Graph<T> for State where T: Copy + Mul<Output=T> + Add<Output=T> {
         self.id
     }
 
-    fn run(&self, state: &Context<T>, variable: &Context<T>) -> Tensor<T> {
-        match state.get(self.get_id()) {
+    fn run(&self, state: &Context<T>, _: &Context<T>) -> Tensor<T> {
+        match state.get(Graph::<T>::get_id(self)) {
             Some(x) => x.clone(),
-            None    => panic!("State {} does not exist in state", self.get_id()),
+            None    => panic!("State {} does not exist in state", Graph::<T>::get_id(self)),
         }
     }
 
-    fn forward_pass(&self, state: &Context<T>, variable: &Context<T>, history: &mut Context<T>) -> Tensor<T> {
-        match state.get(self.get_id()) {
+    fn forward_pass(&self, state: &Context<T>, _: &Context<T>, _: &mut Context<T>) -> Tensor<T> {
+        match state.get(Graph::<T>::get_id(self)) {
             Some(x) => x.clone(),
-            None    => panic!("State {} does not exist in state", self.get_id()),
+            None    => panic!("State {} does not exist in state", Graph::<T>::get_id(self)),
         }
     }
 
-    fn backward_pass(&self, state: &mut Context<T>, variable: &Context<T>, history: &Context<T>, gradient: &Tensor<T>, learning_rate: &T) {
-        let delta = match history.get(self.get_id()) {
+    fn backward_pass(&self, state: &mut Context<T>, _: &Context<T>, history: &Context<T>, gradient: &Tensor<T>, learning_rate: &T) {
+        let delta = gradient * learning_rate;
+        let previous_state = match history.get(Graph::<T>::get_id(self)) {
             Some(x) => x,
-            None    => panic!("State {} does not exist in history", self.get_id()),
-        } * learning_rate;
-        let previous_state = match history.get(self.get_id()) {
-            Some(x) => x,
-            None    => panic!("State {} does not exist in state", self.get_id()),
+            None    => panic!("State {} does not exist in state", Graph::<T>::get_id(self)),
         };
-        state.set(self.get_id(), previous_state + &delta);
+        state.set(Graph::<T>::get_id(self), previous_state + &delta);
     }
 }

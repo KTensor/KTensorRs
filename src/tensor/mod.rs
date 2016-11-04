@@ -115,7 +115,7 @@ impl Tensor<f64> {
     pub fn from_gaussian(dimensions: Vec2) -> Tensor<f64> {
         let Vec2(row, col) = dimensions;
         let mut rng = thread_rng();
-        let normal = Normal::new(0.0, 2.0);
+        let normal = Normal::new(0.0, 1.0);
         let buf = Vec::<f64>::with_capacity(row * col).iter().map(|&_| {
             let num = normal.ind_sample(&mut rng);
             if num > 1.0 {
@@ -154,7 +154,7 @@ impl Tensor<f32> {
     pub fn from_gaussian(dimensions: Vec2) -> Tensor<f32> {
         let Vec2(row, col) = dimensions;
         let mut rng = thread_rng();
-        let normal = Normal::new(0.0, 2.0);
+        let normal = Normal::new(0.0, 1.0);
         let buf = Vec::<f32>::with_capacity(row * col).iter().map(|&_| {
             let num = normal.ind_sample(&mut rng) as f32;
             if num > 1.0 {

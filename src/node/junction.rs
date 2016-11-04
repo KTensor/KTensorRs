@@ -6,7 +6,6 @@ use node::{Graph};
 pub struct Node<T> {
     id: &'static str,
     op: fn(Vec<Tensor<T>>) -> Tensor<T>,
-    op_train: fn(Vec<&Tensor<T>>) -> Tensor<T>,
     op_prime: fn(&Tensor<T>, Vec<&Tensor<T>>) -> Vec<Tensor<T>>,
     param: Vec<Box<Graph<T>>>,
 }
@@ -23,11 +22,10 @@ impl <T> Node<T> {
     /// - `operation_train`
     /// - `operation_prime` - f_x,y which takes in a gradient dC/dz and inputs x, y; outputs gradients dC/dx, dC/dy
     /// - `parameter` - Vec<(x, y)>
-    pub fn new(node_id: &'static str, operation: fn(Vec<Tensor<T>>) -> Tensor<T>, operation_train: fn(Vec<&Tensor<T>>) -> Tensor<T>, operation_prime: fn(&Tensor<T>, Vec<&Tensor<T>>) -> Vec<Tensor<T>>, parameter: Vec<Box<Graph<T>>>) -> Node<T> {
+    pub fn new(node_id: &'static str, operation: fn(Vec<Tensor<T>>) -> Tensor<T>, operation_prime: fn(&Tensor<T>, Vec<&Tensor<T>>) -> Vec<Tensor<T>>, parameter: Vec<Box<Graph<T>>>) -> Node<T> {
         Node {
             id: node_id,
             op: operation,
-            op_train: operation_train,
             op_prime: operation_prime,
             param: parameter,
         }
@@ -44,7 +42,7 @@ impl <T> Graph<T> for Node<T> where T: Copy + Mul<Output=T> + Add<Output=T> {
     }
 
     fn forward_pass(&self, state: &Context<T>, variable: &Context<T>, history: &mut Context<T>) -> Tensor<T> {
-        (self.op_train)(self.param.iter().map(|node| {
+        (self.op)(self.param.iter().map(|node| {
             node.train(state, variable, history)
         }).collect())
     }

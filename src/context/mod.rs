@@ -8,7 +8,7 @@ pub struct Context<T> {
     map: HashMap<&'static str, Tensor<T>>,
 }
 
-impl <T> Context<T> {
+impl <T> Context<T> where T: Copy {
     pub fn new() -> Context<T> {
         Context {
             map: HashMap::new(),
