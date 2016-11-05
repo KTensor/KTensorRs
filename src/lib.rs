@@ -13,13 +13,8 @@
 //! - `Context`
 //! - `Tensor`
 //! - `Node`
-//!
-//! # Examples
-//!
-//! ```
-//! assert_eq!(ktensor::hello_world(), "Hello World!");
-//! ```
-
+//! - `State`
+//! - `Variable`
 pub mod math;
 pub mod tensor;
 pub mod context;
@@ -28,15 +23,4 @@ pub mod op;
 
 pub use context::{Context};
 pub use tensor::{Tensor};
-pub use node::{Node};
-
-/// should return the static string `"Hello World!"`
-///
-/// # Examples
-///
-/// ```
-/// assert_eq!(ktensor::hello_world(), "Hello World!");
-/// ```
-pub fn hello_world() -> &'static str {
-    "Hello World!"
-}
+pub use node::{Node, State, Variable};

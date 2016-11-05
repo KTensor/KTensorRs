@@ -43,3 +43,8 @@ impl <T> Graph<T> for State where T: Copy + Mul<Output=T> + Add<Output=T> {
         state.set(Graph::<T>::get_id(self), previous_state + &delta);
     }
 }
+
+
+pub fn init_state<T>(vec_states: Vec<State>, context: &mut Context<T>) where T: Copy + Mul<Output=T> + Add<Output=T> {
+
+}
