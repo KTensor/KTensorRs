@@ -23,4 +23,4 @@ pub mod op;
 
 pub use context::{Context};
 pub use tensor::{Tensor};
-pub use node::{Node, State, Variable};
+pub use node::{Node, State, Variable, init_state_f64, init_state_f32};

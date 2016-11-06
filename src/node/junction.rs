@@ -1,10 +1,12 @@
 use std::ops::{Mul, Add};
+use math::{Vec2};
 use context::{Context};
 use tensor::{Tensor};
 use node::{Graph};
 
 pub struct Node<T> {
     id: &'static str,
+    dim: Vec2,
     op: fn(Vec<Tensor<T>>) -> Tensor<T>,
     op_prime: fn(&Tensor<T>, Vec<&Tensor<T>>) -> Vec<Tensor<T>>,
     param: Vec<Box<Graph<T>>>,
@@ -22,9 +24,20 @@ impl <T> Node<T> {
     /// - `operation_train`
     /// - `operation_prime` - f_x,y which takes in a gradient dC/dz and inputs x, y; outputs gradients dC/dx, dC/dy
     /// - `parameter` - Vec<(x, y)>
-    pub fn new(node_id: &'static str, operation: fn(Vec<Tensor<T>>) -> Tensor<T>, operation_prime: fn(&Tensor<T>, Vec<&Tensor<T>>) -> Vec<Tensor<T>>, parameter: Vec<Box<Graph<T>>>) -> Node<T> {
+    pub fn new(node_id: &'static str, operation: fn(Vec<Tensor<T>>) -> Tensor<T>, operation_prime: fn(&Tensor<T>, Vec<&Tensor<T>>) -> Vec<Tensor<T>>, parameter: Vec<Box<Graph<T>>>, calc_dim: fn(Vec<Vec2>) -> Vec2) -> Node<T> where T: Copy {
         Node {
             id: node_id,
+            dim: calc_dim(parameter.iter().map(|node| node.get_dim()).collect()),
+            op: operation,
+            op_prime: operation_prime,
+            param: parameter,
+        }
+    }
+
+    pub fn with_dim(node_id: &'static str, operation: fn(Vec<Tensor<T>>) -> Tensor<T>, operation_prime: fn(&Tensor<T>, Vec<&Tensor<T>>) -> Vec<Tensor<T>>, parameter: Vec<Box<Graph<T>>>, dimension: Vec2) -> Node<T> {
+        Node {
+            id: node_id,
+            dim: dimension,
             op: operation,
             op_prime: operation_prime,
             param: parameter,
@@ -35,6 +48,10 @@ impl <T> Node<T> {
 impl <T> Graph<T> for Node<T> where T: Copy + Mul<Output=T> + Add<Output=T> {
     fn get_id(&self) -> &'static str {
         self.id
+    }
+
+    fn get_dim(&self) -> Vec2 {
+        self.dim
     }
 
     fn run(&self, state: &Context<T>, variable: &Context<T>) -> Tensor<T> {
