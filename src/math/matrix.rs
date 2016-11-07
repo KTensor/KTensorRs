@@ -61,6 +61,10 @@ impl <T> Matrix<T> {
         self.buffer
     }
 
+    pub fn buffer(&self) -> &Vec<T> {
+        &self.buffer
+    }
+
     /// Returns `Vec` of indicies from `(0, 0)` to `(x, y)` (inclusive and exclusive)
     ///
     /// # Arguments

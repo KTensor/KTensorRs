@@ -58,6 +58,10 @@ impl <T> Tensor<T> {
         self.matrix.to_flattened()
     }
 
+    pub fn buffer(&self) -> &Vec<T> {
+        self.matrix.buffer()
+    }
+
     /// max_num_strides = (dim - width) / stride + 1
     pub fn get_convolutions(){
 
