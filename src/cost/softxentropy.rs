@@ -9,6 +9,8 @@ fn operation(vec: Vec<Tensor<f64>>) -> Tensor<f64> {
     let y = vec[1];
     let Vec2(row, col) = z.dim();
 
+    let Cost = 0.0;
+
     for i in 0..row {
         let mut vec_z = Vec::with_capacity(col);
         let mut vec_y = Vec::with_capacity(col);
@@ -29,8 +31,11 @@ fn operation(vec: Vec<Tensor<f64>>) -> Tensor<f64> {
         let cost = vec_y.iter().zip(vec_n.iter()).fold(0.0, |sum, (&a, &b)| {
             sum + (b - log_g) * -a
         });
+
+        Cost += cost;
     }
-    n
+
+
 }
 
 fn operation_prime<T>(gradient: &Tensor<T>, vec: Vec<&Tensor<T>>) -> Vec<Tensor<T>> where T: Mul<Output=T> + Add<Output=T> + Copy {
