@@ -20,6 +20,7 @@ pub mod tensor;
 pub mod context;
 pub mod node;
 pub mod op;
+pub mod cost;
 
 pub use context::{Context};
 pub use tensor::{Tensor};

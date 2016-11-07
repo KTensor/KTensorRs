@@ -84,6 +84,10 @@ impl <T> Tensor<T> where T: Copy {
             matrix: self.matrix.transpose(),
         }
     }
+
+    pub fn get(&self, vec2: Vec2) -> T {
+        self.matrix.get(vec2)
+    }
 }
 
 impl <T> Clone for Tensor<T> where T: Copy {
