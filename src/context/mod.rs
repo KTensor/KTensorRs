@@ -1,6 +1,7 @@
 use std::collections::{HashMap};
 use tensor::{Tensor};
 use node::{Graph};
+use math::{Vec2};
 
 /// Context Map
 pub struct Context<T> {
@@ -21,10 +22,14 @@ impl <T> Context<T> where T: Copy {
         }
     }
 
-    pub fn from_vec(context_vec: Vec<(&Graph<T>, Tensor<T>)>) -> Context<T> {
+    pub fn from_vec(context_vec: Vec<(Box<Graph<T>>, Tensor<T>)>) -> Context<T> {
         let mut context_map = HashMap::with_capacity(context_vec.len());
 
         for (node, batch) in context_vec {
+            let Vec2(x1, y1) = node.get_dim();
+            let Vec2(x2, y2) = batch.dim();
+            assert_eq!(x1, x2);
+            assert_eq!(y1, y2);
             context_map.insert(node.get_id(), batch);
         }
 

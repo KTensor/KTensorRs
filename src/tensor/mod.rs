@@ -37,6 +37,14 @@ impl <T> Tensor<T> {
         }
     }
 
+    pub fn from_vec(dimensions: Vec2, vector: Vec<T>) -> Tensor<T> {
+        assert_eq!(dimensions.0 * dimensions.1, vector.len());
+        Tensor {
+            dim: dimensions,
+            matrix: Matrix::new(dimensions, vector),
+        }
+    }
+
     /// Returns the dimensions of the `Tensor`
     pub fn dim(&self) -> Vec2 {
         self.dim

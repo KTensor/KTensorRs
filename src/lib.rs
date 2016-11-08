@@ -22,6 +22,7 @@ pub mod node;
 pub mod op;
 pub mod cost;
 
-pub use context::{Context};
+pub use math::{Vec2};
 pub use tensor::{Tensor};
+pub use context::{Context};
 pub use node::{Node, State, Variable, init_state_f64, init_state_f32};
