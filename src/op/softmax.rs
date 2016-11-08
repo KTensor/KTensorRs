@@ -39,6 +39,6 @@ fn calc_dim(dims: Vec<Vec2>) -> Vec2 {
     dims[0]
 }
 
-pub fn softmax_f64(node_id: &'static str, a: Box<Graph<f64>>) -> Node<f64> {
+pub fn softmax_f64<'a>(node_id: &'static str, a: &'a Graph<f64>) -> Node<'a, f64> {
     Node::new(node_id, operation_f64, operation_prime_f64, vec![a], calc_dim)
 }

@@ -22,7 +22,7 @@ impl <T> Context<T> where T: Copy {
         }
     }
 
-    pub fn from_vec(context_vec: Vec<(Box<Graph<T>>, Tensor<T>)>) -> Context<T> {
+    pub fn from_vec(context_vec: Vec<(&Graph<T>, Tensor<T>)>) -> Context<T> {
         let mut context_map = HashMap::with_capacity(context_vec.len());
 
         for (node, batch) in context_vec {

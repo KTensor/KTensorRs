@@ -59,13 +59,13 @@ impl <T> Graph<T> for State where T: Copy + Mul<Output=T> + Add<Output=T> {
     }
 }
 
-pub fn init_state_f64(vec_states: Vec<Box<State>>, context: &mut Context<f64>) {
+pub fn init_state_f64(vec_states: Vec<&State>, context: &mut Context<f64>) {
     for state in vec_states {
         state.init_norm_f64(context);
     }
 }
 
-pub fn init_state_f32(vec_states: Vec<Box<State>>, context: &mut Context<f32>) {
+pub fn init_state_f32(vec_states: Vec<&State>, context: &mut Context<f32>) {
     for state in vec_states {
         state.init_norm_f32(context);
     }

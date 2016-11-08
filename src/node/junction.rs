@@ -4,15 +4,15 @@ use context::{Context};
 use tensor::{Tensor};
 use node::{Graph};
 
-pub struct Node<T> {
+pub struct Node<'a, T: 'a> {
     id: &'static str,
     dim: Vec2,
     op: fn(Vec<Tensor<T>>) -> Tensor<T>,
     op_prime: fn(&Tensor<T>, Vec<&Tensor<T>>) -> Vec<Tensor<T>>,
-    param: Vec<Box<Graph<T>>>,
+    param: Vec<&'a Graph<T>>,
 }
 
-impl <T> Node<T> {
+impl <'a, T> Node<'a, T> {
     /// computation node
     ///
     /// # Arguments
@@ -24,7 +24,7 @@ impl <T> Node<T> {
     /// - `operation_train`
     /// - `operation_prime` - f_x,y which takes in a gradient dC/dz and inputs x, y; outputs gradients dC/dx, dC/dy
     /// - `parameter` - Vec<(x, y)>
-    pub fn new(node_id: &'static str, operation: fn(Vec<Tensor<T>>) -> Tensor<T>, operation_prime: fn(&Tensor<T>, Vec<&Tensor<T>>) -> Vec<Tensor<T>>, parameter: Vec<Box<Graph<T>>>, calc_dim: fn(Vec<Vec2>) -> Vec2) -> Node<T> where T: Copy {
+    pub fn new(node_id: &'static str, operation: fn(Vec<Tensor<T>>) -> Tensor<T>, operation_prime: fn(&Tensor<T>, Vec<&Tensor<T>>) -> Vec<Tensor<T>>, parameter: Vec<&'a Graph<T>>, calc_dim: fn(Vec<Vec2>) -> Vec2) -> Node<'a, T> where T: Copy {
         Node {
             id: node_id,
             dim: calc_dim(parameter.iter().map(|node| node.get_dim()).collect()),
@@ -34,7 +34,7 @@ impl <T> Node<T> {
         }
     }
 
-    pub fn with_dim(node_id: &'static str, operation: fn(Vec<Tensor<T>>) -> Tensor<T>, operation_prime: fn(&Tensor<T>, Vec<&Tensor<T>>) -> Vec<Tensor<T>>, parameter: Vec<Box<Graph<T>>>, dimension: Vec2) -> Node<T> {
+    pub fn with_dim(node_id: &'static str, operation: fn(Vec<Tensor<T>>) -> Tensor<T>, operation_prime: fn(&Tensor<T>, Vec<&Tensor<T>>) -> Vec<Tensor<T>>, parameter: Vec<&'a Graph<T>>, dimension: Vec2) -> Node<'a, T> {
         Node {
             id: node_id,
             dim: dimension,
@@ -45,7 +45,7 @@ impl <T> Node<T> {
     }
 }
 
-impl <T> Graph<T> for Node<T> where T: Copy + Mul<Output=T> + Add<Output=T> {
+impl <'a, T> Graph<T> for Node<'a, T> where T: Copy + Mul<Output=T> + Add<Output=T> {
     fn get_id(&self) -> &'static str {
         self.id
     }
