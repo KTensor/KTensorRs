@@ -123,8 +123,8 @@ impl Tensor<f64> {
     /// ```
     /// let tensor = ktensor::Tensor::<f64>::from_gaussian(ktensor::math::Vec2(5, 5));
     /// let tensor = tensor.to_flattened();
+    /// assert_eq!(tensor.len(), 25);
     /// for &i in tensor.iter() {
-    ///     println!("{}", i);
     ///     assert!(i <= 1.0 && i >= -1.0);
     /// }
     /// ```
@@ -132,16 +132,17 @@ impl Tensor<f64> {
         let Vec2(row, col) = dimensions;
         let mut rng = thread_rng();
         let normal = Normal::new(0.0, 1.0);
-        let buf = Vec::<f64>::with_capacity(row * col).iter().map(|&_| {
+        let mut buf = Vec::<f64>::with_capacity(row * col);
+        for _ in 0..row * col {
             let num = normal.ind_sample(&mut rng);
             if num > 1.0 {
-                1.0
+                buf.push(1.0);
             } else if num < -1.0 {
-                -1.0
+                buf.push(-1.0);
             } else {
-                num
+                buf.push(num);
             }
-        }).collect();
+        }
 
         Tensor {
             dim: dimensions,
@@ -163,6 +164,7 @@ impl Tensor<f32> {
     /// ```
     /// let tensor = ktensor::Tensor::<f32>::from_gaussian(ktensor::math::Vec2(5, 5));
     /// let tensor = tensor.to_flattened();
+    /// assert_eq!(tensor.len(), 25);
     /// for &i in tensor.iter() {
     ///     assert!(i <= 1.0 && i >= -1.0);
     /// }
@@ -171,16 +173,17 @@ impl Tensor<f32> {
         let Vec2(row, col) = dimensions;
         let mut rng = thread_rng();
         let normal = Normal::new(0.0, 1.0);
-        let buf = Vec::<f32>::with_capacity(row * col).iter().map(|&_| {
+        let mut buf = Vec::<f32>::with_capacity(row * col);
+        for _ in 0..row * col {
             let num = normal.ind_sample(&mut rng) as f32;
             if num > 1.0 {
-                1.0
+                buf.push(1.0);
             } else if num < -1.0 {
-                -1.0
+                buf.push(-1.0);
             } else {
-                num
+                buf.push(num);
             }
-        }).collect();
+        }
 
         Tensor {
             dim: dimensions,

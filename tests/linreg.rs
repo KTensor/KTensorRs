@@ -10,7 +10,7 @@ fn linear_regression() {
     let weight_w = k::State::new("weight_w", k::Vec2(2, 2));
 
     // Initialize
-    let mut variables = k::Context::<f64>::with_capacity(1);
+    let mut variables = k::Context::<f64>::with_capacity(2);
     k::variable::init_f64(vec![&input_x, &target_y], &mut variables);
     let mut states = k::Context::<f64>::with_capacity(1);
     k::state::init_f64(vec![&weight_w], &mut states);
