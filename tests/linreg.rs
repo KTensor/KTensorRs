@@ -35,9 +35,9 @@ fn linear_regression() {
         // init batch
 
 
-        k::train(xentropy, &mut states, &variables, &mut history, 0.001);
+        k::train(&xentropy, &mut states, &variables, &mut history, &0.001);
         if i % print_rate == 0 {
-            println!("{}", );
+
         }
     }
 }
