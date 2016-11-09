@@ -1,5 +1,4 @@
 use std::ops::{Mul, Add};
-use std::iter::{repeat};
 use math::{Vec2};
 use node::{Graph};
 use tensor::{Tensor};
@@ -19,11 +18,11 @@ impl Variable {
     }
 
     pub fn init_norm_f64(&self, context: &mut Context<f64>) {
-        context.set(self.id, Tensor::from_vec(self.dim, repeat(0.0).take(self.dim.0 * self.dim.1).collect()));
+        context.set(self.id, Tensor::from_vec(self.dim, vec![0.0; self.dim.0 * self.dim.1]));
     }
 
     pub fn init_norm_f32(&self, context: &mut Context<f32>) {
-        context.set(self.id, Tensor::from_vec(self.dim, repeat(0.0).take(self.dim.0 * self.dim.1).collect()));
+        context.set(self.id, Tensor::from_vec(self.dim, vec![0.0; self.dim.0 * self.dim.1]));
     }
 }
 
