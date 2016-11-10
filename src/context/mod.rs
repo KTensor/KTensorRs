@@ -1,3 +1,4 @@
+use std::string::{String};
 use std::collections::{HashMap};
 use tensor::{Tensor};
 use node::{Graph};
@@ -6,7 +7,7 @@ use math::{Vec2};
 /// Context Map
 pub struct Context<T> {
     /// map of nodeids and values
-    map: HashMap<&'static str, Tensor<T>>,
+    map: HashMap<String, Tensor<T>>,
 }
 
 impl <T> Context<T> where T: Copy {
@@ -38,11 +39,11 @@ impl <T> Context<T> where T: Copy {
         }
     }
 
-    pub fn get(&self, nodeid: &'static str) -> Option<&Tensor<T>> {
-        self.map.get(nodeid)
+    pub fn get(&self, nodeid: String) -> Option<&Tensor<T>> {
+        self.map.get(&nodeid)
     }
 
-    pub fn set(&mut self, nodeid: &'static str, tensor: Tensor<T>) {
+    pub fn set(&mut self, nodeid: String, tensor: Tensor<T>) {
         self.map.insert(nodeid, tensor);
     }
 }

@@ -1,3 +1,4 @@
+use std::string::{String};
 use math::{Vec2, Matrix};
 use node::{Node, Graph};
 use tensor::{Tensor};
@@ -30,6 +31,6 @@ fn calc_dim(dims: Vec<Vec2>) -> Vec2 {
     dims[0]
 }
 
-pub fn relu_f64<'a>(node_id: &'static str, z: &'a Graph<f64>) -> Node<'a, f64> {
+pub fn relu_f64<'a>(node_id: String, z: &'a Graph<f64>) -> Node<'a, f64> {
     Node::new(node_id, operation_f64, operation_prime_f64, vec![z], calc_dim)
 }

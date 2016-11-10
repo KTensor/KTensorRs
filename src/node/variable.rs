@@ -1,3 +1,4 @@
+use std::string::{String};
 use std::ops::{Mul, Add};
 use math::{Vec2};
 use node::{Graph};
@@ -5,12 +6,12 @@ use tensor::{Tensor};
 use context::{Context};
 
 pub struct Variable {
-    id: &'static str,
+    id: String,
     dim: Vec2,
 }
 
 impl Variable {
-    pub fn new(node_id: &'static str, dimensions: Vec2) -> Variable {
+    pub fn new(node_id: String, dimensions: Vec2) -> Variable {
         Variable {
             id: node_id,
             dim: dimensions,
@@ -18,17 +19,17 @@ impl Variable {
     }
 
     pub fn init_norm_f64(&self, context: &mut Context<f64>) {
-        context.set(self.id, Tensor::from_vec(self.dim, vec![0.0; self.dim.0 * self.dim.1]));
+        context.set(self.id.clone(), Tensor::from_vec(self.dim, vec![0.0; self.dim.0 * self.dim.1]));
     }
 
     pub fn init_norm_f32(&self, context: &mut Context<f32>) {
-        context.set(self.id, Tensor::from_vec(self.dim, vec![0.0; self.dim.0 * self.dim.1]));
+        context.set(self.id.clone(), Tensor::from_vec(self.dim, vec![0.0; self.dim.0 * self.dim.1]));
     }
 }
 
 impl <T> Graph<T> for Variable where T: Copy + Mul<Output=T> + Add<Output=T> {
-    fn get_id(&self) -> &'static str {
-        self.id
+    fn get_id(&self) -> String {
+        self.id.clone()
     }
 
     fn get_dim(&self) -> Vec2 {

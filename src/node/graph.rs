@@ -1,9 +1,10 @@
+use std::string::{String};
 use math::{Vec2};
 use context::{Context};
 use tensor::{Tensor};
 
 pub trait Graph<T> where T: Copy {
-    fn get_id(&self) -> &'static str;
+    fn get_id(&self) -> String;
     fn get_dim(&self) -> Vec2;
     fn run(&self, state: &Context<T>, variable: &Context<T>) -> Tensor<T>;
     fn train(&self, state: &Context<T>, variable: &Context<T>, history: &mut Context<T>) -> Tensor<T> {
