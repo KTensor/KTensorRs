@@ -1,19 +1,20 @@
 use std::string::{String};
+use std::sync::{Arc};
 use std::ops::{Mul, Add};
 use math::{Vec2};
 use context::{Context};
 use tensor::{Tensor};
 use node::{Graph};
 
-pub struct Node<'a, T: 'a> {
+pub struct Node<T> {
     id: String,
     dim: Vec2,
     op: fn(Vec<Tensor<T>>) -> Tensor<T>,
     op_prime: fn(&Tensor<T>, Vec<&Tensor<T>>) -> Vec<Tensor<T>>,
-    param: Vec<&'a Graph<T>>,
+    param: Vec<Arc<Graph<T>>>,
 }
 
-impl <'a, T> Node<'a, T> {
+impl <T> Node<T> {
     /// computation node
     ///
     /// # Arguments
@@ -25,7 +26,7 @@ impl <'a, T> Node<'a, T> {
     /// - `operation_train`
     /// - `operation_prime` - f_x,y which takes in a gradient dC/dz and inputs x, y; outputs gradients dC/dx, dC/dy
     /// - `parameter` - Vec<(x, y)>
-    pub fn new(node_id: String, operation: fn(Vec<Tensor<T>>) -> Tensor<T>, operation_prime: fn(&Tensor<T>, Vec<&Tensor<T>>) -> Vec<Tensor<T>>, parameter: Vec<&'a Graph<T>>, calc_dim: fn(Vec<Vec2>) -> Vec2) -> Node<'a, T> where T: Copy {
+    pub fn new(node_id: String, operation: fn(Vec<Tensor<T>>) -> Tensor<T>, operation_prime: fn(&Tensor<T>, Vec<&Tensor<T>>) -> Vec<Tensor<T>>, parameter: Vec<Arc<Graph<T>>>, calc_dim: fn(Vec<Vec2>) -> Vec2) -> Node<T> where T: Copy {
         Node {
             id: node_id,
             dim: calc_dim(parameter.iter().map(|node| node.get_dim()).collect()),
@@ -35,7 +36,7 @@ impl <'a, T> Node<'a, T> {
         }
     }
 
-    pub fn with_dim(node_id: String, operation: fn(Vec<Tensor<T>>) -> Tensor<T>, operation_prime: fn(&Tensor<T>, Vec<&Tensor<T>>) -> Vec<Tensor<T>>, parameter: Vec<&'a Graph<T>>, dimension: Vec2) -> Node<'a, T> {
+    pub fn with_dim(node_id: String, operation: fn(Vec<Tensor<T>>) -> Tensor<T>, operation_prime: fn(&Tensor<T>, Vec<&Tensor<T>>) -> Vec<Tensor<T>>, parameter: Vec<Arc<Graph<T>>>, dimension: Vec2) -> Node<T> {
         Node {
             id: node_id,
             dim: dimension,
@@ -46,7 +47,7 @@ impl <'a, T> Node<'a, T> {
     }
 }
 
-impl <'a, T> Graph<T> for Node<'a, T> where T: Copy + Mul<Output=T> + Add<Output=T> {
+impl <T> Graph<T> for Node<T> where T: Copy + Mul<Output=T> + Add<Output=T> {
     fn get_id(&self) -> String {
         self.id.clone()
     }
@@ -65,7 +66,7 @@ impl <'a, T> Graph<T> for Node<'a, T> where T: Copy + Mul<Output=T> + Add<Output
         }).collect())
     }
 
-    fn backward_pass(&self, state: &mut Context<T>, variable: &Context<T>, history: &Context<T>, gradient: &Tensor<T>, learning_rate: &T) {
+    fn backward_pass(&self, state: &mut Context<T>, variable: &Context<T>, history: &Context<T>, gradient: &Tensor<T>, learning_rate: T) {
         let deltas = (self.op_prime)(gradient, self.param.iter().map(|node| match history.get(node.get_id()) {
             Some(x) => x,
             None    => panic!("Node {} does not exist in history", node.get_id()),

@@ -1,4 +1,5 @@
 use std::string::{String};
+use std::sync::{Arc};
 use std::ops::{Mul, Add};
 use math::{Vec2};
 use node::{Graph};
@@ -50,8 +51,8 @@ impl <T> Graph<T> for State where T: Copy + Mul<Output=T> + Add<Output=T> {
         }
     }
 
-    fn backward_pass(&self, state: &mut Context<T>, _: &Context<T>, history: &Context<T>, gradient: &Tensor<T>, learning_rate: &T) {
-        let delta = gradient * learning_rate;
+    fn backward_pass(&self, state: &mut Context<T>, _: &Context<T>, history: &Context<T>, gradient: &Tensor<T>, learning_rate: T) {
+        let delta = gradient * &learning_rate;
         let previous_state = match history.get(Graph::<T>::get_id(self)) {
             Some(x) => x,
             None    => panic!("State {} does not exist in state", Graph::<T>::get_id(self)),
@@ -60,13 +61,13 @@ impl <T> Graph<T> for State where T: Copy + Mul<Output=T> + Add<Output=T> {
     }
 }
 
-pub fn init_state_f64(vec_states: &Vec<State>, context: &mut Context<f64>) {
+pub fn init_state_f64(vec_states: Vec<Arc<State>>, context: &mut Context<f64>) {
     for state in vec_states {
         state.init_norm_f64(context);
     }
 }
 
-pub fn init_state_f32(vec_states: &Vec<State>, context: &mut Context<f32>) {
+pub fn init_state_f32(vec_states: Vec<Arc<State>>, context: &mut Context<f32>) {
     for state in vec_states {
         state.init_norm_f32(context);
     }

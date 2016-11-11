@@ -1,4 +1,5 @@
 use std::string::{String};
+use std::sync::{Arc};
 use math::{Vec2};
 use node::{Node, Graph};
 use tensor::{Tensor};
@@ -31,6 +32,6 @@ fn calc_dim(dims: Vec<Vec2>) -> Vec2 {
     dims[0]
 }
 
-pub fn softmax_cross_entropy_f64<'a>(node_id: String, s: &'a Graph<f64>, y: &'a Graph<f64>) -> Node<'a, f64> {
+pub fn softmax_cross_entropy_f64(node_id: String, s: Arc<Graph<f64>>, y: Arc<Graph<f64>>) -> Node<f64> {
     Node::new(node_id, operation_f64, operation_prime, vec![s, y], calc_dim)
 }

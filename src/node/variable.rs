@@ -1,4 +1,5 @@
 use std::string::{String};
+use std::sync::{Arc};
 use std::ops::{Mul, Add};
 use math::{Vec2};
 use node::{Graph};
@@ -50,16 +51,16 @@ impl <T> Graph<T> for Variable where T: Copy + Mul<Output=T> + Add<Output=T> {
         }
     }
 
-    fn backward_pass(&self, _: &mut Context<T>, _: &Context<T>, _: &Context<T>, _: &Tensor<T>, _: &T) {}
+    fn backward_pass(&self, _: &mut Context<T>, _: &Context<T>, _: &Context<T>, _: &Tensor<T>, _: T) {}
 }
 
-pub fn init_variables_f64(vec_variables: Vec<&Variable>, context: &mut Context<f64>) {
+pub fn init_variables_f64(vec_variables: Vec<Arc<Variable>>, context: &mut Context<f64>) {
     for variable in vec_variables {
         variable.init_norm_f64(context);
     }
 }
 
-pub fn init_variables_f32(vec_variables: Vec<&Variable>, context: &mut Context<f32>) {
+pub fn init_variables_f32(vec_variables: Vec<Arc<Variable>>, context: &mut Context<f32>) {
     for variable in vec_variables {
         variable.init_norm_f32(context);
     }
