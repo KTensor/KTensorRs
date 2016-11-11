@@ -1,12 +1,5 @@
 extern crate ktensor as k;
 
-fn relu_layer_f64<'a>(layer_number: usize, x: &'a k::Graph<f64>, w: &'a k::Graph<f64>, b: &'a k::Graph<f64>) -> (k::Node<'a, f64>, k::Node<'a, f64>, k::Node<'a, f64>) {
-    let dot = k::op::dot::<f64>(format!("layer_{}_dot", layer_number), x, w);
-    let add = k::op::add::<f64>(format!("layer_{}_add", layer_number), &dot, b);
-    let relu = k::op::relu_f64(format!("layer_{}_relu", layer_number), &add);
-    (dot, add, relu)
-}
-
 #[test]
 fn linear_regression() {
     // Variables
@@ -23,20 +16,23 @@ fn linear_regression() {
 
 
     // Graph
-    let mut states = Vec::<k::State>::with_capacity(2 * 2);
-    let mut graphs = Vec::<k::Node<f64>>::with_capacity(3 * 2);
+    let layers: usize = 2;
+    let mut states = Vec::<k::State>::with_capacity(2 * layers);
+    let mut graphs = Vec::<k::Node<f64>>::with_capacity(3 * layers);
     let mut graph_head: &k::Graph<f64> = &input_x;
 
-    for i in 0..2 {
-        let w = k::State::new(format!("weight_w_{}", i), k::Vec2(2, 2));
-        let b = k::State::new(format!("weight_b_{}", i), k::Vec2(1, 2));
-        let (dot, add, relu) = relu_layer_f64(i, graph_head, &w, &b);
-        graph_head = &relu;
-        graphs.push(dot);
-        graphs.push(add);
-        graphs.push(relu);
-        states.push(w);
-        states.push(b);
+    for i in 0..layers {
+        let s = states.len();
+        let g = graphs.len();
+
+        states.push(k::State::new(format!("weight_w_{}", i), k::Vec2(2, 2)));
+        states.push(k::State::new(format!("weight_b_{}", i), k::Vec2(1, 2)));
+
+        graphs.push(k::op::dot::<f64>(format!("layer_{}_dot", i), graph_head, &states[s + 0]));
+        graphs.push(k::op::add::<f64>(format!("layer_{}_add", i), &graphs[g + 0], &states[s + 1]));
+        graphs.push(k::op::relu_f64(format!("layer_{}_relu", i), &graphs[g + 1]));
+
+        graph_head = &graphs[g + 2];
     }
 
     let mut state_context = k::Context::<f64>::with_capacity(2);
