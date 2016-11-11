@@ -19,6 +19,10 @@ impl Variable {
         }
     }
 
+    pub fn get_id(&self) -> String {
+        self.id.clone()
+    }
+
     pub fn init_norm_f64(&self, context: &mut Context<f64>) {
         context.set(self.id.clone(), Tensor::from_vec(self.dim, vec![0.0; self.dim.0 * self.dim.1]));
     }
@@ -38,16 +42,16 @@ impl <T> Graph<T> for Variable where T: Copy + Mul<Output=T> + Add<Output=T> {
     }
 
     fn run(&self, _: &Context<T>, variable: &Context<T>) -> Tensor<T> {
-        match variable.get(Graph::<T>::get_id(self)) {
+        match variable.get(self.get_id()) {
             Some(x) => x.clone(),
-            None    => panic!("Variable {} does not exist in variable", Graph::<T>::get_id(self)),
+            None    => panic!("Variable {} does not exist in variable", self.get_id()),
         }
     }
 
     fn forward_pass(&self, _: &Context<T>, variable: &Context<T>, _: &mut Context<T>) -> Tensor<T> {
-        match variable.get(Graph::<T>::get_id(self)) {
+        match variable.get(self.get_id()) {
             Some(x) => x.clone(),
-            None    => panic!("Variable {} does not exist in variable", Graph::<T>::get_id(self)),
+            None    => panic!("Variable {} does not exist in variable", self.get_id()),
         }
     }
 
