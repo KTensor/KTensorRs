@@ -26,7 +26,7 @@ pub mod run;
 pub use math::{Vec2};
 pub use tensor::{Tensor};
 pub use context::{Context};
-pub use node::{Node, State, Variable};
+pub use node::{Graph, Node, State, Variable};
 pub use run::{execute, train};
 
 pub mod state {

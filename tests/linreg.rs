@@ -1,9 +1,10 @@
 extern crate ktensor as k;
 
-fn relu_layer_f64(layer_number: usize, x: &k::Graph<f64>, w: &k::Graph<f64>, b: &k::Graph<f64>) -> (k::Graph<f64>, k::Graph<f64>, k::Graph<f64>) {
+fn relu_layer_f64<'a>(layer_number: usize, x: &'a k::Graph<f64>, w: &'a k::Graph<f64>, b: &'a k::Graph<f64>) -> (k::Node<'a, f64>, k::Node<'a, f64>, k::Node<'a, f64>) {
     let dot = k::op::dot::<f64>(format!("layer_{}_dot", layer_number), x, w);
     let add = k::op::add::<f64>(format!("layer_{}_add", layer_number), &dot, b);
-    (dot, add, k::op::relu_f64(format!("layer_{}_relu", layer_number), &add))
+    let relu = k::op::relu_f64(format!("layer_{}_relu", layer_number), &add);
+    (dot, add, relu)
 }
 
 #[test]
@@ -13,8 +14,8 @@ fn linear_regression() {
     let target_y = k::Variable::new("target_y".to_string(), k::Vec2(1, 2));
 
     // Initialize
-    let mut variables = k::Context::<f64>::with_capacity(2);
-    k::variable::init_f64(vec![&input_x, &target_y], &mut variables);
+    let mut variable_context = k::Context::<f64>::with_capacity(2);
+    k::variable::init_f64(vec![&input_x, &target_y], &mut variable_context);
 
     // States
     let weight_w = k::State::new("weight_w".to_string(), k::Vec2(2, 2));
@@ -23,7 +24,7 @@ fn linear_regression() {
 
     // Graph
     let mut states = Vec::<k::State>::with_capacity(2 * 2);
-    let mut graphs = Vec::<k::Graph<f64>>::with_capacity(3 * 2);
+    let mut graphs = Vec::<k::Node<f64>>::with_capacity(3 * 2);
     let mut graph_head: &k::Graph<f64> = &input_x;
 
     for i in 0..2 {
@@ -58,7 +59,7 @@ fn linear_regression() {
         // init batch
 
 
-        k::train(&xentropy, &mut states, &variables, &mut history, &0.001);
+        k::train(&xentropy, &mut state_context, &variable_context, &mut history, &0.001);
         if i % print_rate == 0 {
 
         }
