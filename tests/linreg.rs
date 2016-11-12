@@ -4,8 +4,8 @@ use std::sync::{Arc};
 #[test]
 fn linear_regression() {
     // Variables
-    let input_x = Arc::new(k::Variable::new("input_x".to_string(), k::Vec2(0, 2)));
-    let target_y = Arc::new(k::Variable::new("target_y".to_string(), k::Vec2(0, 2)));
+    let input_x = Arc::new(k::Variable::new("input_x".to_string(), k::Vec2(4, 2)));
+    let target_y = Arc::new(k::Variable::new("target_y".to_string(), k::Vec2(4, 2)));
 
     // Initialize
     let mut variable_context = k::Context::<f64>::with_capacity(2);

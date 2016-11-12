@@ -5,7 +5,7 @@ use node::{Node, Graph};
 use tensor::{Tensor};
 
 fn operation_f64(vec: Vec<Tensor<f64>>) -> Tensor<f64> {
-    Tensor::new(vec[0].dim(), Matrix::new(vec[0].dim(), vec[0].buffer().iter().map(|&a| {
+    Tensor::from_vec(vec[0].dim(), vec[0].buffer().iter().map(|&a| {
         if a > 16.0 {
             a
         } else if a < -16.0 {
@@ -13,17 +13,19 @@ fn operation_f64(vec: Vec<Tensor<f64>>) -> Tensor<f64> {
         } else {
             a / 16.0 + 0.9375 * (1.0 + a.exp()).ln()
         }
-    }).collect()))
+    }).collect())
 }
 
 fn operation_prime_f64(gradient: &Tensor<f64>, vec: Vec<&Tensor<f64>>) -> Vec<Tensor<f64>> {
-    vec![Tensor::new(vec[0].dim(), Matrix::new(vec[0].dim(), vec[0].buffer().iter().zip(gradient.buffer().iter()).map(|(&a, &g)| {
+    let Vec2(_, y1) = gradient.dim();
+    let gradient_buffer = gradient.buffer();
+    vec![Tensor::new(vec[0].dim(), Matrix::new(vec[0].dim(), vec[0].buffer().iter().enumerate().map(|(i, &a)| {
         if a > 16.0 {
-            g
+            gradient_buffer[i % y1]
         } else if a < -16.0 {
-            g / 16.0
+            gradient_buffer[i % y1] / 16.0
         } else {
-            g / 16.0 + g * 0.9375 * (1.0 + (-a).exp()).recip()
+            gradient_buffer[i % y1] / 16.0 + gradient_buffer[i % y1] * 0.9375 * (1.0 + (-a).exp()).recip()
         }
     }).collect()))]
 }
