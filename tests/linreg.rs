@@ -13,17 +13,28 @@ fn linear_regression() {
 
 
     // Graph
-    let layers: usize = 1;
+    let layers: usize = 2;
     let mut states = Vec::<Arc<k::State>>::with_capacity(2 * layers);
     let mut graph_head: Arc<k::Graph<f64>> = input_x.clone();
 
     {
-        let w = Arc::new(k::State::new(format!("weight_w_{}", 1), k::Vec2(2, 2)));
-        let b = Arc::new(k::State::new(format!("weight_b_{}", 1), k::Vec2(1, 2)));
+        let w = Arc::new(k::State::new(format!("weight_w_{}", 1), k::Vec2(2, 4)));
+        let b = Arc::new(k::State::new(format!("weight_b_{}", 1), k::Vec2(1, 4)));
 
         let dot = Arc::new(k::op::dot::<f64>(format!("layer_{}_dot", 1), graph_head, w.clone()));
-        let add = Arc::new(k::op::add::<f64>(format!("layer_{}_add", 1), dot, b.clone()));
+        let add = Arc::new(k::op::add_f64(format!("layer_{}_add", 1), dot, b.clone()));
         let relu = Arc::new(k::op::relu_f64(format!("layer_{}_relu", 1), add));
+
+        states.push(w);
+        states.push(b);
+        graph_head = relu;
+
+        let w = Arc::new(k::State::new(format!("weight_w_{}", 2), k::Vec2(4, 2)));
+        let b = Arc::new(k::State::new(format!("weight_b_{}", 2), k::Vec2(1, 2)));
+
+        let dot = Arc::new(k::op::dot::<f64>(format!("layer_{}_dot", 2), graph_head, w.clone()));
+        let add = Arc::new(k::op::add_f64(format!("layer_{}_add", 2), dot, b.clone()));
+        let relu = Arc::new(k::op::relu_f64(format!("layer_{}_relu", 2), add));
 
         states.push(w);
         states.push(b);
@@ -56,7 +67,7 @@ fn linear_regression() {
         ]),
     );
 
-    for i in 0..256 {
+    for i in 0..131072 {
         // init batch
         variable_context.set(input_x.get_id(), training_set.0.clone());
         variable_context.set(target_y.get_id(), training_set.1.clone());
@@ -65,5 +76,12 @@ fn linear_regression() {
         if i % print_rate == 0 {
 
         }
+    }
+
+    variable_context.set(input_x.get_id(), training_set.0.clone());
+    variable_context.set(target_y.get_id(), training_set.1.clone());
+    let final_test = k::execute(xentropy.clone(), &state_context, &variable_context);
+    for i in 0..4 {
+        println!("{} {}", final_test.get(k::Vec2(i, 0)), final_test.get(k::Vec2(i, 1)));
     }
 }

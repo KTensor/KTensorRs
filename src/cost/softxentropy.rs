@@ -8,7 +8,7 @@ fn operation_f64(vec: Vec<Tensor<f64>>) -> Tensor<f64> {
     vec[0].clone() // just returns softmax
 }
 
-fn operation_prime(_: &Tensor<f64>, vec: Vec<&Tensor<f64>>) -> Vec<Tensor<f64>> {
+fn operation_prime_f64(_: &Tensor<f64>, vec: Vec<&Tensor<f64>>) -> Vec<Tensor<f64>> {
     let total_grad = vec[0] + &(vec[1] * &-1.0);
     let Vec2(row, col) = total_grad.dim();
 
@@ -33,5 +33,5 @@ fn calc_dim(dims: Vec<Vec2>) -> Vec2 {
 }
 
 pub fn softmax_cross_entropy_f64(node_id: String, s: Arc<Graph<f64>>, y: Arc<Graph<f64>>) -> Node<f64> {
-    Node::new(node_id, operation_f64, operation_prime, vec![s, y], calc_dim)
+    Node::new(node_id, operation_f64, operation_prime_f64, vec![s, y], calc_dim)
 }
