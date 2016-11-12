@@ -9,19 +9,7 @@ fn operation_f64(vec: Vec<Tensor<f64>>) -> Tensor<f64> {
 }
 
 fn operation_prime_f64(_: &Tensor<f64>, vec: Vec<&Tensor<f64>>) -> Vec<Tensor<f64>> {
-    let total_grad = vec[0] + &(vec[1] * &-1.0);
-    let Vec2(row, col) = total_grad.dim();
-
-    let mut vector_grad = Vec::with_capacity(col);
-    for i in 0..col {
-        let mut k = 0.0;
-        for j in 0..row {
-            k += total_grad.get(Vec2(j, i));
-        }
-        vector_grad.push(k / row as f64);
-    }
-
-    vec![Tensor::from_vec(Vec2(1, col), vector_grad)]
+    vec![vec[0] + &(vec[1] * &-1.0)]
 }
 
 fn calc_dim(dims: Vec<Vec2>) -> Vec2 {
