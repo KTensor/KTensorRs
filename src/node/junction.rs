@@ -5,6 +5,7 @@ use math::{Vec2};
 use context::{Context};
 use tensor::{Tensor};
 use node::{Graph};
+use std::fmt::Display;
 
 pub struct Node<T> {
     id: String,
@@ -47,7 +48,7 @@ impl <T> Node<T> {
     }
 }
 
-impl <T> Graph<T> for Node<T> where T: Copy + Mul<Output=T> + Add<Output=T> {
+impl <T> Graph<T> for Node<T> where T: Copy + Mul<Output=T> + Add<Output=T> + Display {
     fn get_id(&self) -> String {
         self.id.clone()
     }
@@ -71,7 +72,12 @@ impl <T> Graph<T> for Node<T> where T: Copy + Mul<Output=T> + Add<Output=T> {
             Some(x) => x,
             None    => panic!("Node {} does not exist in history", node.get_id()),
         }).collect());
+        println!("\n+ {}", self.get_id());
         for (delta, parameter) in deltas.iter().zip(self.param.iter()) {
+            println!("\n-{} {} {}", parameter.get_id(), parameter.get_dim().0, parameter.get_dim().1);
+            for i in delta.buffer().iter() {
+                println!("{}", i);
+            }
             parameter.backward_pass(state, variable, history, delta, learning_rate);
         }
     }

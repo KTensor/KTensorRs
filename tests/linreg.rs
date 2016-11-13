@@ -108,4 +108,49 @@ fn linear_regression() {
     for i in 0..4 {
         println!("{} {}", final_test.get(k::Vec2(i, 0)), final_test.get(k::Vec2(i, 1)));
     }
+
+    let mut history = k::Context::<f64>::with_capacity(5 * layers + 4);
+
+    k::train(xentropy.clone(), &mut state_context, &variable_context, &mut history, -0.001);
+
+    println!("\ninput x");
+    let final_test = k::execute(input_x.clone(), &state_context, &variable_context);
+    for i in 0..4 {
+        println!("{} {}", final_test.get(k::Vec2(i, 0)), final_test.get(k::Vec2(i, 1)));
+    }
+    println!("\nweight w 1");
+    let final_test = k::execute(w.clone(), &state_context, &variable_context);
+    for i in 0..2 {
+        println!("{} {}", final_test.get(k::Vec2(i, 0)), final_test.get(k::Vec2(i, 1)));
+    }
+    println!("\ndot");
+    let final_test = k::execute(dot.clone(), &state_context, &variable_context);
+    for i in 0..4 {
+        println!("{} {}", final_test.get(k::Vec2(i, 0)), final_test.get(k::Vec2(i, 1)));
+    }
+    println!("\nweight b 1");
+    let final_test = k::execute(b.clone(), &state_context, &variable_context);
+    for i in 0..1 {
+        println!("{} {}", final_test.get(k::Vec2(i, 0)), final_test.get(k::Vec2(i, 1)));
+    }
+    println!("\nadd");
+    let final_test = k::execute(add.clone(), &state_context, &variable_context);
+    for i in 0..4 {
+        println!("{} {}", final_test.get(k::Vec2(i, 0)), final_test.get(k::Vec2(i, 1)));
+    }
+    println!("\nrelu");
+    let final_test = k::execute(relu.clone(), &state_context, &variable_context);
+    for i in 0..4 {
+        println!("{} {}", final_test.get(k::Vec2(i, 0)), final_test.get(k::Vec2(i, 1)));
+    }
+    println!("\ntarget y");
+    let final_test = k::execute(target_y.clone(), &state_context, &variable_context);
+    for i in 0..4 {
+        println!("{} {}", final_test.get(k::Vec2(i, 0)), final_test.get(k::Vec2(i, 1)));
+    }
+    println!("\nxentropy");
+    let final_test = k::execute(xentropy.clone(), &state_context, &variable_context);
+    for i in 0..4 {
+        println!("{} {}", final_test.get(k::Vec2(i, 0)), final_test.get(k::Vec2(i, 1)));
+    }
 }
