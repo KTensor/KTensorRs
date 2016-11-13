@@ -26,7 +26,7 @@ fn operation_prime_f64(gradient: &Tensor<f64>, vec: Vec<&Tensor<f64>>) -> Vec<Te
             for j in 0..x1 {
                 k += gradient.get(Vec2(j, i));
             }
-            vector_grad.push(k / x1 as f64);
+            vector_grad.push(k);
         }
 
         vec![gradient.clone(), Tensor::from_vec(Vec2(1, y1), vector_grad)]

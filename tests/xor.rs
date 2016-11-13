@@ -104,7 +104,7 @@ fn xor() {
         if i % print_rate == 0 {
             variable_context.set(input_x.get_id(), training_set.0.clone());
             variable_context.set(target_y.get_id(), training_set.1.clone());
-            println!("\nxentropy2");
+            println!("\niteration: {} | xentropy2 output:", i);
             let final_test = k::execute(xentropy2.clone(), &state_context, &variable_context);
             for i in 0..4 {
                 println!("{} {}", final_test.get(k::Vec2(i, 0)), final_test.get(k::Vec2(i, 1)));
@@ -118,7 +118,7 @@ fn xor() {
 
     variable_context.set(input_x.get_id(), training_set.0.clone());
     variable_context.set(target_y.get_id(), training_set.1.clone());
-    println!("\nxentropy2");
+    println!("\nfinal test | xentropy2 output:");
     let final_test = k::execute(xentropy2.clone(), &state_context, &variable_context);
     for i in 0..4 {
         println!("{} {}", final_test.get(k::Vec2(i, 0)), final_test.get(k::Vec2(i, 1)));
