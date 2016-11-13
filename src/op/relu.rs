@@ -23,7 +23,7 @@ fn operation_prime_f64(gradient: &Tensor<f64>, vec: Vec<&Tensor<f64>>) -> Vec<Te
         } else if a < -16.0 {
             g / 16.0
         } else {
-            g / 16.0 + g * 0.9375 * (1.0 + (-a).exp()).recip()
+            g * (0.0625 + 0.9375 * (1.0 + (-a).exp()).recip())
         }
     }).collect())]
 }

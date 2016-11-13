@@ -22,7 +22,7 @@ fn operation_prime_f64(gradient: &Tensor<f64>, vec: Vec<&Tensor<f64>>) -> Vec<Te
     if x1 != 1 && x2 == 1 {
         let mut vector_grad = Vec::with_capacity(y1);
         for i in 0..y1 {
-            let mut k = gradient.get(Vec2(0, i));
+            let mut k = 0.0;
             for j in 0..x1 {
                 k += gradient.get(Vec2(j, i));
             }
