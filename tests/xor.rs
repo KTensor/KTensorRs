@@ -117,14 +117,21 @@ fn xor() {
     //     println!("{} {}", final_test.get(k::Vec2(i, 0)), final_test.get(k::Vec2(i, 1)));
     // }
 
+    let batch = true;
     let print_rate = 4096;
 
     let mut history = k::Context::<f64>::with_capacity(5 * layers + 4);
 
-    for i in 0..65536 {
+    if batch {
+        variable_context.set(input_x.get_id(), training_set.0.clone());
+        variable_context.set(target_y.get_id(), training_set.1.clone());
+    }
+    for i in 0..16384 {
         let (ref a, ref b) = training_vec[i % 4];
-        variable_context.set(input_x.get_id(), a.clone());
-        variable_context.set(target_y.get_id(), b.clone());
+        if !batch {
+            variable_context.set(input_x.get_id(), a.clone());
+            variable_context.set(target_y.get_id(), b.clone());
+        }
         k::train(xentropy2.clone(), &mut state_context, &variable_context, &mut history, -0.1);
         if i % print_rate == 0 {
             variable_context.set(input_x.get_id(), training_set.0.clone());
