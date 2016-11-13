@@ -3,7 +3,10 @@ use std::sync::{Arc};
 
 #[test]
 fn xor() {
-    // Variables
+    ///////////////
+    // Variables //
+    ///////////////
+
     let input_x = Arc::new(k::Variable::new("input_x".to_string(), k::Vec2(0, 2)));
     let target_y = Arc::new(k::Variable::new("target_y".to_string(), k::Vec2(0, 2)));
 
@@ -12,7 +15,10 @@ fn xor() {
     k::variable::init_f64(vec![input_x.clone(), target_y.clone()], &mut variable_context);
 
 
-    // Graph
+    ///////////
+    // Graph //
+    ///////////
+
     let layers: usize = 2;
     let mut states = Vec::<Arc<k::State>>::with_capacity(2 * layers);
     let mut graph_head: Arc<k::Graph<f64>> = input_x.clone();
@@ -50,6 +56,10 @@ fn xor() {
     let mut state_context = k::Context::<f64>::with_capacity(2 * layers);
     k::state::init_f64(states, &mut state_context);
 
+    //////////////
+    // training //
+    //////////////
+
     let training_set = (
         k::Tensor::from_vec(k::Vec2(4, 2), vec![
         0.0, 0.0,
@@ -72,52 +82,8 @@ fn xor() {
         (k::Tensor::from_vec(k::Vec2(1, 2), vec![1.0, 1.0,]), k::Tensor::from_vec(k::Vec2(1, 2), vec![0.0, 1.0,])),
     ];
 
-
-
-    // variable_context.set(input_x.get_id(), training_set.0.clone());
-    // variable_context.set(target_y.get_id(), training_set.1.clone());
-    // println!("\ninput x");
-    // let final_test = k::execute(input_x.clone(), &state_context, &variable_context);
-    // for i in 0..4 {
-    //     println!("{} {}", final_test.get(k::Vec2(i, 0)), final_test.get(k::Vec2(i, 1)));
-    // }
-    // println!("\nweight w 1");
-    // let final_test = k::execute(w.clone(), &state_context, &variable_context);
-    // for i in 0..2 {
-    //     println!("{} {}", final_test.get(k::Vec2(i, 0)), final_test.get(k::Vec2(i, 1)));
-    // }
-    // println!("\ndot");
-    // let final_test = k::execute(dot.clone(), &state_context, &variable_context);
-    // for i in 0..4 {
-    //     println!("{} {}", final_test.get(k::Vec2(i, 0)), final_test.get(k::Vec2(i, 1)));
-    // }
-    // println!("\nweight b 1");
-    // let final_test = k::execute(b.clone(), &state_context, &variable_context);
-    // for i in 0..1 {
-    //     println!("{} {}", final_test.get(k::Vec2(i, 0)), final_test.get(k::Vec2(i, 1)));
-    // }
-    // println!("\nadd");
-    // let final_test = k::execute(add.clone(), &state_context, &variable_context);
-    // for i in 0..4 {
-    //     println!("{} {}", final_test.get(k::Vec2(i, 0)), final_test.get(k::Vec2(i, 1)));
-    // }
-    // println!("\nrelu");
-    // let final_test = k::execute(relu.clone(), &state_context, &variable_context);
-    // for i in 0..4 {
-    //     println!("{} {}", final_test.get(k::Vec2(i, 0)), final_test.get(k::Vec2(i, 1)));
-    // }
-    // println!("\ntarget y");
-    // let final_test = k::execute(target_y.clone(), &state_context, &variable_context);
-    // for i in 0..4 {
-    //     println!("{} {}", final_test.get(k::Vec2(i, 0)), final_test.get(k::Vec2(i, 1)));
-    // }
-    // println!("\nxentropy");
-    // let final_test = k::execute(xentropy.clone(), &state_context, &variable_context);
-    // for i in 0..4 {
-    //     println!("{} {}", final_test.get(k::Vec2(i, 0)), final_test.get(k::Vec2(i, 1)));
-    // }
-
     let batch = true;
+    let learning_rate = -0.1;
     let print_rate = 4096;
 
     let mut history = k::Context::<f64>::with_capacity(5 * layers + 4);
@@ -132,7 +98,9 @@ fn xor() {
             variable_context.set(input_x.get_id(), a.clone());
             variable_context.set(target_y.get_id(), b.clone());
         }
-        k::train(xentropy2.clone(), &mut state_context, &variable_context, &mut history, -0.1);
+        k::train(xentropy2.clone(), &mut state_context, &variable_context, &mut history, learning_rate);
+
+        // test print
         if i % print_rate == 0 {
             variable_context.set(input_x.get_id(), training_set.0.clone());
             variable_context.set(target_y.get_id(), training_set.1.clone());
@@ -144,47 +112,9 @@ fn xor() {
         }
     }
 
-    // println!("\ninput x");
-    // let final_test = k::execute(input_x.clone(), &state_context, &variable_context);
-    // for i in 0..4 {
-    //     println!("{} {}", final_test.get(k::Vec2(i, 0)), final_test.get(k::Vec2(i, 1)));
-    // }
-    // println!("\nweight w 1");
-    // let final_test = k::execute(w.clone(), &state_context, &variable_context);
-    // for i in 0..2 {
-    //     println!("{} {}", final_test.get(k::Vec2(i, 0)), final_test.get(k::Vec2(i, 1)));
-    // }
-    // println!("\ndot");
-    // let final_test = k::execute(dot.clone(), &state_context, &variable_context);
-    // for i in 0..4 {
-    //     println!("{} {}", final_test.get(k::Vec2(i, 0)), final_test.get(k::Vec2(i, 1)));
-    // }
-    // println!("\nweight b 1");
-    // let final_test = k::execute(b.clone(), &state_context, &variable_context);
-    // for i in 0..1 {
-    //     println!("{} {}", final_test.get(k::Vec2(i, 0)), final_test.get(k::Vec2(i, 1)));
-    // }
-    // println!("\nadd");
-    // let final_test = k::execute(add.clone(), &state_context, &variable_context);
-    // for i in 0..4 {
-    //     println!("{} {}", final_test.get(k::Vec2(i, 0)), final_test.get(k::Vec2(i, 1)));
-    // }
-    // println!("\nrelu");
-    // let final_test = k::execute(relu.clone(), &state_context, &variable_context);
-    // for i in 0..4 {
-    //     println!("{} {}", final_test.get(k::Vec2(i, 0)), final_test.get(k::Vec2(i, 1)));
-    // }
-    // println!("\ntarget y");
-    // let final_test = k::execute(target_y.clone(), &state_context, &variable_context);
-    // for i in 0..4 {
-    //     println!("{} {}", final_test.get(k::Vec2(i, 0)), final_test.get(k::Vec2(i, 1)));
-    // }
-    // println!("\nxentropy");
-    // let final_test = k::execute(xentropy.clone(), &state_context, &variable_context);
-    // for i in 0..4 {
-    //     println!("{} {}", final_test.get(k::Vec2(i, 0)), final_test.get(k::Vec2(i, 1)));
-    // }
-
+    ////////////////
+    // final test //
+    ////////////////
 
     variable_context.set(input_x.get_id(), training_set.0.clone());
     variable_context.set(target_y.get_id(), training_set.1.clone());
