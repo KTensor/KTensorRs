@@ -1,18 +1,20 @@
 extern crate ktensor as k;
-use std::sync::{Arc};
+use k::{Arc, Vec2, Tensor, Context, Graph, State, Variable};
+
 
 #[test]
+#[ignore]
 fn xor() {
     ///////////////
     // Variables //
     ///////////////
 
-    let input_x = Arc::new(k::Variable::new("input_x".to_string(), k::Vec2(0, 2)));
-    let target_y = Arc::new(k::Variable::new("target_y".to_string(), k::Vec2(0, 2)));
+    let input_x = Arc::new(Variable::new("input_x".to_string(), Vec2(0, 2)));
+    let target_y = Arc::new(Variable::new("target_y".to_string(), Vec2(0, 2)));
 
     // Initialize
-    let mut variable_context = k::Context::<f64>::with_capacity(2);
-    k::variable::init_f64(vec![input_x.clone(), target_y.clone()], &mut variable_context);
+    let mut variable_context = Context::<f64>::with_capacity(2);
+    Variable::init_f64(vec![input_x.clone(), target_y.clone()], &mut variable_context);
 
 
     ///////////
@@ -20,14 +22,14 @@ fn xor() {
     ///////////
 
     let layers: usize = 2;
-    let mut states = Vec::<Arc<k::State>>::with_capacity(2 * layers);
-    let mut graph_head: Arc<k::Graph<f64>> = input_x.clone();
+    let mut states = Vec::<Arc<State>>::with_capacity(2 * layers);
+    let mut graph_head: Arc<Graph<f64>> = input_x.clone();
 
-    let w = Arc::new(k::State::new(format!("weight_w_{}", 1), k::Vec2(2, 4)));
-    let b = Arc::new(k::State::new(format!("weight_b_{}", 1), k::Vec2(1, 4)));
+    let w = Arc::new(State::new(format!("weight_w_{}", 1), Vec2(2, 4)));
+    let b = Arc::new(State::new(format!("weight_b_{}", 1), Vec2(1, 4)));
 
     let dot = Arc::new(k::op::dot::<f64>(format!("layer_{}_dot", 1), graph_head.clone(), w.clone()));
-    let add = Arc::new(k::op::add_f64(format!("layer_{}_add", 1), dot.clone(), b.clone()));
+    let add = Arc::new(k::op::add::<f64>(format!("layer_{}_add", 1), dot.clone(), b.clone()));
 
     let relu = Arc::new(k::op::relu_f64(format!("layer_{}_relu", 1), add.clone()));
 
@@ -36,11 +38,11 @@ fn xor() {
     states.push(w.clone());
     states.push(b.clone());
 
-    let w2 = Arc::new(k::State::new(format!("weight_w_{}", 2), k::Vec2(4, 2)));
-    let b2 = Arc::new(k::State::new(format!("weight_b_{}", 2), k::Vec2(1, 2)));
+    let w2 = Arc::new(State::new(format!("weight_w_{}", 2), Vec2(4, 2)));
+    let b2 = Arc::new(State::new(format!("weight_b_{}", 2), Vec2(1, 2)));
 
     let dot2 = Arc::new(k::op::dot::<f64>(format!("layer_{}_dot", 2), graph_head.clone(), w2.clone()));
-    let add2 = Arc::new(k::op::add_f64(format!("layer_{}_add", 2), dot2.clone(), b2.clone()));
+    let add2 = Arc::new(k::op::add::<f64>(format!("layer_{}_add", 2), dot2.clone(), b2.clone()));
 
     let relu2 = Arc::new(k::op::relu_f64(format!("layer_{}_relu", 2), add2.clone()));
 
@@ -53,21 +55,21 @@ fn xor() {
     let xentropy2 = Arc::new(k::cost::softmax_cross_entropy_f64(format!("layer_{}_xentropy", 2), softmax2.clone(), target_y.clone()));
 
     // initialize states
-    let mut state_context = k::Context::<f64>::with_capacity(2 * layers);
-    k::state::init_f64(states, &mut state_context);
+    let mut state_context = Context::<f64>::with_capacity(2 * layers);
+    State::init_f64(states, &mut state_context);
 
     //////////////
     // training //
     //////////////
 
     let training_set = (
-        k::Tensor::from_vec(k::Vec2(4, 2), vec![
+        Tensor::from_vec(Vec2(4, 2), vec![
         0.0, 0.0,
         0.0, 1.0,
         1.0, 0.0,
         1.0, 1.0,
         ]),
-        k::Tensor::from_vec(k::Vec2(4, 2), vec![
+        Tensor::from_vec(Vec2(4, 2), vec![
         0.0, 1.0,
         1.0, 0.0,
         1.0, 0.0,
@@ -76,17 +78,17 @@ fn xor() {
     );
 
     let training_vec = vec![
-        (k::Tensor::from_vec(k::Vec2(1, 2), vec![0.0, 0.0,]), k::Tensor::from_vec(k::Vec2(1, 2), vec![0.0, 1.0,])),
-        (k::Tensor::from_vec(k::Vec2(1, 2), vec![0.0, 1.0,]), k::Tensor::from_vec(k::Vec2(1, 2), vec![1.0, 0.0,])),
-        (k::Tensor::from_vec(k::Vec2(1, 2), vec![1.0, 0.0,]), k::Tensor::from_vec(k::Vec2(1, 2), vec![1.0, 0.0,])),
-        (k::Tensor::from_vec(k::Vec2(1, 2), vec![1.0, 1.0,]), k::Tensor::from_vec(k::Vec2(1, 2), vec![0.0, 1.0,])),
+        (Tensor::from_vec(Vec2(1, 2), vec![0.0, 0.0,]), Tensor::from_vec(Vec2(1, 2), vec![0.0, 1.0,])),
+        (Tensor::from_vec(Vec2(1, 2), vec![0.0, 1.0,]), Tensor::from_vec(Vec2(1, 2), vec![1.0, 0.0,])),
+        (Tensor::from_vec(Vec2(1, 2), vec![1.0, 0.0,]), Tensor::from_vec(Vec2(1, 2), vec![1.0, 0.0,])),
+        (Tensor::from_vec(Vec2(1, 2), vec![1.0, 1.0,]), Tensor::from_vec(Vec2(1, 2), vec![0.0, 1.0,])),
     ];
 
     let batch = true;
     let learning_rate = -0.1;
     let print_rate = 4096;
 
-    let mut history = k::Context::<f64>::with_capacity(5 * layers + 4);
+    let mut history = Context::<f64>::with_capacity(5 * layers + 4);
 
     if batch {
         variable_context.set(input_x.get_id(), training_set.0.clone());
@@ -107,7 +109,7 @@ fn xor() {
             println!("\niteration: {} | xentropy2 output:", i);
             let final_test = k::execute(xentropy2.clone(), &state_context, &variable_context);
             for i in 0..4 {
-                println!("{} {}", final_test.get(k::Vec2(i, 0)), final_test.get(k::Vec2(i, 1)));
+                println!("{} {}", final_test.get(Vec2(i, 0)), final_test.get(Vec2(i, 1)));
             }
         }
     }
@@ -121,6 +123,6 @@ fn xor() {
     println!("\nfinal test | xentropy2 output:");
     let final_test = k::execute(xentropy2.clone(), &state_context, &variable_context);
     for i in 0..4 {
-        println!("{} {}", final_test.get(k::Vec2(i, 0)), final_test.get(k::Vec2(i, 1)));
+        println!("{} {}", final_test.get(Vec2(i, 0)), final_test.get(Vec2(i, 1)));
     }
 }

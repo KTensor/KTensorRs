@@ -30,6 +30,18 @@ impl State {
     pub fn init_norm_f32(&self, context: &mut Context<f32>) {
         context.set(self.get_id(), Tensor::<f32>::from_gaussian(self.dim));
     }
+
+    pub fn init_f64(vec_states: Vec<Arc<State>>, context: &mut Context<f64>) {
+        for state in vec_states {
+            state.init_norm_f64(context);
+        }
+    }
+
+    pub fn init_f32(vec_states: Vec<Arc<State>>, context: &mut Context<f32>) {
+        for state in vec_states {
+            state.init_norm_f32(context);
+        }
+    }
 }
 
 impl <T> Graph<T> for State where T: Copy + Mul<Output=T> + Add<Output=T> {
@@ -62,17 +74,5 @@ impl <T> Graph<T> for State where T: Copy + Mul<Output=T> + Add<Output=T> {
             None    => panic!("State {} does not exist in state", self.get_id()),
         };
         state.set(self.get_id(), previous_state + &delta);
-    }
-}
-
-pub fn init_state_f64(vec_states: Vec<Arc<State>>, context: &mut Context<f64>) {
-    for state in vec_states {
-        state.init_norm_f64(context);
-    }
-}
-
-pub fn init_state_f32(vec_states: Vec<Arc<State>>, context: &mut Context<f32>) {
-    for state in vec_states {
-        state.init_norm_f32(context);
     }
 }
