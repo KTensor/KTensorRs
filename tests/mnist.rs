@@ -95,35 +95,93 @@ fn mnist(){
 
     let layers: usize = 2;
     let mut states = Vec::<Arc<State>>::with_capacity(2 * layers);
-    let mut graph_head: Arc<Graph<f64>> = input_x.clone();
+    let mut graph_head: Arc<Graph<f32>> = input_x.clone();
 
     {
         let w = Arc::new(State::new(format!("weight_w_{}", 1), Vec2(28 * 28, 16)));
         let b = Arc::new(State::new(format!("weight_b_{}", 1), Vec2(1, 16)));
 
-        let dot = Arc::new(k::op::dot::<f64>(format!("layer_{}_dot", 1), graph_head.clone(), w.clone()));
-        let add = Arc::new(k::op::add::<f64>(format!("layer_{}_add", 1), dot.clone(), b.clone()));
+        let dot = Arc::new(k::op::dot::<f32>(format!("layer_{}_dot", 1), graph_head.clone(), w.clone()));
+        let add = Arc::new(k::op::add::<f32>(format!("layer_{}_add", 1), dot, b.clone()));
 
-        let relu = Arc::new(k::op::relu_f64(format!("layer_{}_relu", 1), add.clone()));
+        let relu = Arc::new(k::op::relu_f32(format!("layer_{}_relu", 1), add));
 
-        graph_head = relu.clone();
+        graph_head = relu;
 
-        states.push(w.clone());
-        states.push(b.clone());
+        states.push(w);
+        states.push(b);
     }
 
     {
-        let w = Arc::new(State::new(format!("weight_w_{}", 1), Vec2(2, 4)));
-        let b = Arc::new(State::new(format!("weight_b_{}", 1), Vec2(1, 4)));
+        let w = Arc::new(State::new(format!("weight_w_{}", 2), Vec2(16, 10)));
+        let b = Arc::new(State::new(format!("weight_b_{}", 2), Vec2(1, 10)));
 
-        let dot = Arc::new(k::op::dot::<f64>(format!("layer_{}_dot", 1), graph_head.clone(), w.clone()));
-        let add = Arc::new(k::op::add::<f64>(format!("layer_{}_add", 1), dot.clone(), b.clone()));
+        let dot = Arc::new(k::op::dot::<f32>(format!("layer_{}_dot", 2), graph_head.clone(), w.clone()));
+        let add = Arc::new(k::op::add::<f32>(format!("layer_{}_add", 2), dot, b.clone()));
 
-        let relu = Arc::new(k::op::relu_f64(format!("layer_{}_relu", 1), add.clone()));
+        let relu = Arc::new(k::op::relu_f32(format!("layer_{}_relu", 2), add);
 
-        graph_head = relu.clone();
+        graph_head = relu;
 
-        states.push(w.clone());
-        states.push(b.clone());
+        states.push(w);
+        states.push(b);
     }
+
+    let softmax2 = Arc::new(k::op::softmax_f32(format!("layer_{}_softmax", 3), graph_head.clone()));
+    let xentropy2 = Arc::new(k::cost::softmax_cross_entropy_f32(format!("layer_{}_xentropy", 3), softmax2.clone(), target_y.clone()));
+
+    // initialize states
+    let mut state_context = Context::<f32>::with_capacity(2 * layers);
+    State::init_f32(states, &mut state_context);
+
+
+    //////////////
+    // training //
+    //////////////
+
+    let training_vec = (
+        Tensor::from_vec(Vec2(4, 2), vec![
+        0.0, 0.0,
+        0.0, 1.0,
+        1.0, 0.0,
+        1.0, 1.0,
+        ]),
+        Tensor::from_vec(Vec2(4, 2), vec![
+        0.0, 1.0,
+        1.0, 0.0,
+        1.0, 0.0,
+        0.0, 1.0,
+        ]),
+    );
+
+    let batch = true;
+    let iterations = 16384;
+    let learning_rate = -0.1;
+    let print_rate = 4096;
+
+    let mut history = Context::<f64>::with_capacity(5 * layers + 4);
+
+    for i in 0..iterations {
+        let (ref a, ref b) = training_vec[i % training_vec.len()];
+        variable_context.set(input_x.get_id(), a.clone());
+        variable_context.set(target_y.get_id(), b.clone());
+
+        k::train(xentropy2.clone(), &mut state_context, &variable_context, &mut history, learning_rate);
+
+        // test print
+        if i % print_rate == 0 {
+            variable_context.set(input_x.get_id(), training_set.0.clone());
+            variable_context.set(target_y.get_id(), training_set.1.clone());
+            println!("\niteration: {} | xentropy2 output:", i);
+            let final_test = k::execute(xentropy2.clone(), &state_context, &variable_context);
+            for i in 0..4 {
+                println!("{} {}", final_test.get(Vec2(i, 0)), final_test.get(Vec2(i, 1)));
+            }
+        }
+    }
+
+    ////////////////
+    // final test //
+    ////////////////
+
 }
