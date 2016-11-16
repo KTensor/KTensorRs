@@ -32,7 +32,7 @@ fn read_u32(reader: &mut Read) -> u32 {
     }
 }
 
-fn read_mnist(labels_path: &Path, labels_checknum: u32, data_path: &Path, data_checknum: u32, batch_size: usize, samples: Option<usize>) {
+fn read_mnist(labels_path: &Path, labels_checknum: u32, data_path: &Path, data_checknum: u32, batch_size: usize, sample_size: Option<usize>) -> Vec<(Tensor<f32>, Tensor<f32>)> {
     let labels_file = match File::open(&labels_path) {
         Err(reason) => panic!("failed to open {}: {}", labels_path.display(), Error::description(&reason)),
         Ok(file)    => file,
@@ -53,25 +53,46 @@ fn read_mnist(labels_path: &Path, labels_checknum: u32, data_path: &Path, data_c
     let labels_count = u32::from_be(read_u32(labels_reader)) as usize;
     let data_count = u32::from_be(read_u32(data_reader)) as usize;
     let sample_count = cmp::min(labels_count, data_count);
-    let sample_count = cmp::min(sample_count, samples.unwrap_or(sample_count));
+    let sample_count = cmp::min(sample_count, sample_size.unwrap_or(sample_count));
 
     let rows = u32::from_be(read_u32(data_reader)) as usize;
     let columns = u32::from_be(read_u32(data_reader)) as usize;
 
-    let mut sample_vec: Vec<(Vec<u8>, Vec<u8>)> = Vec::with_capacity(sample_count/batch_size);
+    let mut sample_vec: Vec<(Tensor<f32>, Tensor<f32>)> = Vec::with_capacity(sample_count/batch_size);
     for _ in 0..sample_count/batch_size {
         let mut sample_data = vec![0u8; batch_size*rows*columns];
         match data_reader.read_exact(sample_data.as_mut()) {
             Err(reason) => panic!("failed to read data byte array: {}", Error::description(&reason)),
             Ok(_)       => (),
         }
-        let mut sample_labels = vec![0u8; batch_size];
+        let mut sample_labels_byte = vec![0u8; batch_size];
         match labels_reader.read_exact(sample_labels.as_mut()) {
             Err(reason) => panic!("failed to read labels byte array: {}", Error::description(&reason)),
             Ok(_)       => (),
         }
-        sample_vec.push((sample_data, sample_labels));
+
+        let sample_data = sample_data.map(|x| x as f32);
+        let sample_labels = Vec<f32>::with_capacity(batch_size * 10);
+        for i in sample_labels_byte {
+            match i {
+                0 => sample_labels.extend([1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0].iter().cloned()),
+                1 => sample_labels.extend([0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0].iter().cloned()),
+                2 => sample_labels.extend([0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0].iter().cloned()),
+                3 => sample_labels.extend([0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0].iter().cloned()),
+                4 => sample_labels.extend([0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0].iter().cloned()),
+                5 => sample_labels.extend([0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0].iter().cloned()),
+                6 => sample_labels.extend([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0].iter().cloned()),
+                7 => sample_labels.extend([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0].iter().cloned()),
+                8 => sample_labels.extend([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0].iter().cloned()),
+                9 => sample_labels.extend([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0].iter().cloned()),
+                _ => (),
+            }
+        }
+
+        sample_vec.push((Tensor::from_vec(Vec2(batch_size, rows*columns), sample_data), Tensor::from_vec(Vec2(batch_size, 10), sample_labels)));
     }
+
+    sample_vec
 }
 
 #[test]
@@ -138,49 +159,59 @@ fn mnist(){
     //////////////
     // Training //
     //////////////
+    {
+        // Parameters
+        let batch_size = 16;
+        let sample_size = Some(4096);
+        let learning_rate = -0.1;
+        let iterations = 16384;
+        let print_rate = 4096;
 
-    let iterations = 16384;
-    let learning_rate = -0.1;
-    let print_rate = 4096;
+        let train_labels_path = Path::new("data/train-labels-idx1-ubyte");
+        let train_data_path = Path::new("data/train-images-idx3-ubyte");
+        let training_vec = read_mnist(&train_labels_path, 2049, &train_data_path, 2051, batch_size, sample_size);
 
-    let train_labels_path = Path::new("data/train-labels-idx1-ubyte");
-    let train_data_path = Path::new("data/train-images-idx3-ubyte");
-    read_mnist(&train_labels_path, 2049, &train_data_path, 2051, 16, Some(4096));
+        let mut history = Context::<f32>::with_capacity(5 * layers + 4);
 
+        let training_vec_length = training_vec.len();
+        for i in 0..iterations {
+            let (ref a, ref b) = training_vec[i % training_vec_length];
+            variable_context.set(input_x.get_id(), a.clone());
+            variable_context.set(target_y.get_id(), b.clone());
 
-    let training_vec = vec![(
-        Tensor::from_vec(Vec2(4, 2), vec![
-        0.0, 0.0,
-        0.0, 1.0,
-        1.0, 0.0,
-        1.0, 1.0,
-        ]),
-        Tensor::from_vec(Vec2(4, 2), vec![
-        0.0, 1.0,
-        1.0, 0.0,
-        1.0, 0.0,
-        0.0, 1.0,
-        ]),
-    )];
+            k::train(xentropy.clone(), &mut state_context, &variable_context, &mut history, learning_rate);
 
-
-    let mut history = Context::<f32>::with_capacity(5 * layers + 4);
-
-    for i in 0..iterations {
-        let (ref a, ref b) = training_vec[i % training_vec.len()];
-        variable_context.set(input_x.get_id(), a.clone());
-        variable_context.set(target_y.get_id(), b.clone());
-
-        k::train(xentropy.clone(), &mut state_context, &variable_context, &mut history, learning_rate);
-
-        // test print
-        if i % print_rate == 0 {
-            println!("\niteration: {} | cross entropy cost: {}", i, k::execute(xentropy.clone(), &state_context, &variable_context).get(Vec2(0, 0)));
+            // test print
+            if i % print_rate == 0 {
+                println!("\niteration: {} | cross entropy cost: {}", i,
+                k::execute(xentropy.clone(), &state_context, &variable_context).get(Vec2(0, 0)));
+            }
         }
     }
 
     ////////////////
     // Final test //
     ////////////////
+    {
+        // Parameters
+        let batch_size = 1;
+        let sample_size = None;
+        let iterations = 16384;
+        let print_rate = 4096;
 
+        let test_labels_path = Path::new("data/t10k-labels-idx1-ubyte");
+        let test_data_path = Path::new("data/t10k-images-idx3-ubyte");
+        let test_vec = read_mnist(&test_labels_path, 2049, &test_data_path, 2051, batch_size, sample_size);
+
+        let mut history = Context::<f32>::with_capacity(5 * layers + 4);
+
+        let score = 0.0;
+        let test_vec_length = test_vec.len();
+        for i in 0..iterations {
+            let (ref a, ref b) = test_vec[i % test_vec_length];
+            variable_context.set(input_x.get_id(), a.clone());
+            variable_context.set(target_y.get_id(), b.clone());
+            
+        }
+    }
 }
