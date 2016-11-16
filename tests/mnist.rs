@@ -77,17 +77,17 @@ fn read_mnist(labels_path: &Path, labels_checknum: u32, data_path: &Path, data_c
 #[test]
 #[ignore]
 fn mnist(){
-    let train_labels_path = Path::new("data/train-labels-idx1-ubyte");
-    let train_data_path = Path::new("data/train-images-idx3-ubyte");
-    read_mnist(&train_labels_path, 2049, &train_data_path, 2051, 16, Some(4096));
-
-
     ///////////////
     // Variables //
     ///////////////
 
     let input_x = Arc::new(Variable::new("input_x".to_string(), Vec2(0, 28 * 28)));
     let target_y = Arc::new(Variable::new("target_y".to_string(), Vec2(0, 10)));
+
+    // Initialize
+    let mut variable_context = Context::<f32>::with_capacity(2);
+    Variable::init_f32(vec![input_x.clone(), target_y.clone()], &mut variable_context);
+
 
     ///////////
     // Graph //
@@ -119,7 +119,7 @@ fn mnist(){
         let dot = Arc::new(k::op::dot::<f32>(format!("layer_{}_dot", 2), graph_head.clone(), w.clone()));
         let add = Arc::new(k::op::add::<f32>(format!("layer_{}_add", 2), dot, b.clone()));
 
-        let relu = Arc::new(k::op::relu_f32(format!("layer_{}_relu", 2), add);
+        let relu = Arc::new(k::op::relu_f32(format!("layer_{}_relu", 2), add));
 
         graph_head = relu;
 
@@ -127,8 +127,8 @@ fn mnist(){
         states.push(b);
     }
 
-    let softmax2 = Arc::new(k::op::softmax_f32(format!("layer_{}_softmax", 3), graph_head.clone()));
-    let xentropy2 = Arc::new(k::cost::softmax_cross_entropy_f32(format!("layer_{}_xentropy", 3), softmax2.clone(), target_y.clone()));
+    let softmax = Arc::new(k::op::softmax_f32(format!("layer_{}_softmax", 3), graph_head.clone()));
+    let xentropy = Arc::new(k::cost::softmax_cross_entropy_f32(format!("layer_{}_xentropy", 3), softmax.clone(), target_y.clone()));
 
     // initialize states
     let mut state_context = Context::<f32>::with_capacity(2 * layers);
@@ -136,10 +136,19 @@ fn mnist(){
 
 
     //////////////
-    // training //
+    // Training //
     //////////////
 
-    let training_vec = (
+    let iterations = 16384;
+    let learning_rate = -0.1;
+    let print_rate = 4096;
+
+    let train_labels_path = Path::new("data/train-labels-idx1-ubyte");
+    let train_data_path = Path::new("data/train-images-idx3-ubyte");
+    read_mnist(&train_labels_path, 2049, &train_data_path, 2051, 16, Some(4096));
+
+
+    let training_vec = vec![(
         Tensor::from_vec(Vec2(4, 2), vec![
         0.0, 0.0,
         0.0, 1.0,
@@ -152,36 +161,26 @@ fn mnist(){
         1.0, 0.0,
         0.0, 1.0,
         ]),
-    );
+    )];
 
-    let batch = true;
-    let iterations = 16384;
-    let learning_rate = -0.1;
-    let print_rate = 4096;
 
-    let mut history = Context::<f64>::with_capacity(5 * layers + 4);
+    let mut history = Context::<f32>::with_capacity(5 * layers + 4);
 
     for i in 0..iterations {
         let (ref a, ref b) = training_vec[i % training_vec.len()];
         variable_context.set(input_x.get_id(), a.clone());
         variable_context.set(target_y.get_id(), b.clone());
 
-        k::train(xentropy2.clone(), &mut state_context, &variable_context, &mut history, learning_rate);
+        k::train(xentropy.clone(), &mut state_context, &variable_context, &mut history, learning_rate);
 
         // test print
         if i % print_rate == 0 {
-            variable_context.set(input_x.get_id(), training_set.0.clone());
-            variable_context.set(target_y.get_id(), training_set.1.clone());
-            println!("\niteration: {} | xentropy2 output:", i);
-            let final_test = k::execute(xentropy2.clone(), &state_context, &variable_context);
-            for i in 0..4 {
-                println!("{} {}", final_test.get(Vec2(i, 0)), final_test.get(Vec2(i, 1)));
-            }
+            println!("\niteration: {} | cross entropy cost: {}", i, k::execute(xentropy.clone(), &state_context, &variable_context).get(Vec2(0, 0)));
         }
     }
 
     ////////////////
-    // final test //
+    // Final test //
     ////////////////
 
 }
