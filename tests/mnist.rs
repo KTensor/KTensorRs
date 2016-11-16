@@ -80,4 +80,50 @@ fn mnist(){
     let train_labels_path = Path::new("data/train-labels-idx1-ubyte");
     let train_data_path = Path::new("data/train-images-idx3-ubyte");
     read_mnist(&train_labels_path, 2049, &train_data_path, 2051, 16, Some(4096));
+
+
+    ///////////////
+    // Variables //
+    ///////////////
+
+    let input_x = Arc::new(Variable::new("input_x".to_string(), Vec2(0, 28 * 28)));
+    let target_y = Arc::new(Variable::new("target_y".to_string(), Vec2(0, 10)));
+
+    ///////////
+    // Graph //
+    ///////////
+
+    let layers: usize = 2;
+    let mut states = Vec::<Arc<State>>::with_capacity(2 * layers);
+    let mut graph_head: Arc<Graph<f64>> = input_x.clone();
+
+    {
+        let w = Arc::new(State::new(format!("weight_w_{}", 1), Vec2(28 * 28, 16)));
+        let b = Arc::new(State::new(format!("weight_b_{}", 1), Vec2(1, 16)));
+
+        let dot = Arc::new(k::op::dot::<f64>(format!("layer_{}_dot", 1), graph_head.clone(), w.clone()));
+        let add = Arc::new(k::op::add::<f64>(format!("layer_{}_add", 1), dot.clone(), b.clone()));
+
+        let relu = Arc::new(k::op::relu_f64(format!("layer_{}_relu", 1), add.clone()));
+
+        graph_head = relu.clone();
+
+        states.push(w.clone());
+        states.push(b.clone());
+    }
+
+    {
+        let w = Arc::new(State::new(format!("weight_w_{}", 1), Vec2(2, 4)));
+        let b = Arc::new(State::new(format!("weight_b_{}", 1), Vec2(1, 4)));
+
+        let dot = Arc::new(k::op::dot::<f64>(format!("layer_{}_dot", 1), graph_head.clone(), w.clone()));
+        let add = Arc::new(k::op::add::<f64>(format!("layer_{}_add", 1), dot.clone(), b.clone()));
+
+        let relu = Arc::new(k::op::relu_f64(format!("layer_{}_relu", 1), add.clone()));
+
+        graph_head = relu.clone();
+
+        states.push(w.clone());
+        states.push(b.clone());
+    }
 }
