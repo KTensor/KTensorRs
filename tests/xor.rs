@@ -11,10 +11,11 @@ fn xor() {
 
     let input_x = Arc::new(Variable::new("input_x".to_string(), Vec2(0, 2)));
     let target_y = Arc::new(Variable::new("target_y".to_string(), Vec2(0, 2)));
+    let relu_threshold = Arc::new(Variable::new("relu_threshold".to_string(), Vec2(1, 1)));
 
     // Initialize
     let mut variable_context = Context::<f64>::with_capacity(2);
-    Variable::init_f64(vec![input_x.clone(), target_y.clone()], &mut variable_context);
+    Variable::init_f64(vec![input_x.clone(), target_y.clone(), relu_threshold.clone()], &mut variable_context);
 
 
     ///////////
@@ -31,7 +32,7 @@ fn xor() {
     let dot = Arc::new(k::op::dot::<f64>(format!("layer_{}_dot", 1), graph_head.clone(), w.clone()));
     let add = Arc::new(k::op::add::<f64>(format!("layer_{}_add", 1), dot.clone(), b.clone()));
 
-    let relu = Arc::new(k::op::relu_f64(format!("layer_{}_relu", 1), add.clone()));
+    let relu = Arc::new(k::op::relu_f64(format!("layer_{}_relu", 1), add.clone(), relu_threshold.clone()));
 
     graph_head = relu.clone();
 
@@ -44,7 +45,7 @@ fn xor() {
     let dot2 = Arc::new(k::op::dot::<f64>(format!("layer_{}_dot", 2), graph_head.clone(), w2.clone()));
     let add2 = Arc::new(k::op::add::<f64>(format!("layer_{}_add", 2), dot2.clone(), b2.clone()));
 
-    let relu2 = Arc::new(k::op::relu_f64(format!("layer_{}_relu", 2), add2.clone()));
+    let relu2 = Arc::new(k::op::relu_f64(format!("layer_{}_relu", 2), add2.clone(), relu_threshold.clone()));
 
     graph_head = relu2.clone();
 
@@ -86,9 +87,12 @@ fn xor() {
 
     let batch = true;
     let learning_rate = -0.1;
+    let threshold = 2.0;
     let print_rate = 4096;
 
     let mut history = Context::<f64>::with_capacity(5 * layers + 4);
+
+    variable_context.set(relu_threshold.get_id(), Tensor::from_vec(Vec2(1, 1), vec![threshold]));
 
     if batch {
         variable_context.set(input_x.get_id(), training_set.0.clone());

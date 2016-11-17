@@ -82,17 +82,17 @@ pub fn softmax_f32(node_id: String, a: Arc<Graph<f32>>) -> Node<f32> {
     Node::new(node_id, operation_f32, operation_prime_f32, vec![a], calc_dim)
 }
 
-pub fn softmax_round_f64(tensor: Tensor<f64>) -> Tensor<usize> {
+pub fn softmax_round_f64(tensor: Tensor<f64>) -> Tensor<i32> {
     let Vec2(row, col) = tensor.dim();
     let mut vec_rounded = Vec::with_capacity(row);
 
     for i in 0..row {
         let mut m = tensor.get(Vec2(1, 1));
-        let mut index: usize = 0;
+        let mut index = 0;
         for j in 1..col {
             let k = tensor.get(Vec2(i, j));
             if k > m {
-                index = j;
+                index = j as i32;
                 m = k;
             }
         }
@@ -103,17 +103,17 @@ pub fn softmax_round_f64(tensor: Tensor<f64>) -> Tensor<usize> {
     Tensor::from_vec(Vec2(row, 1), vec_rounded)
 }
 
-pub fn softmax_round_f32(tensor: Tensor<f32>) -> Tensor<usize> {
+pub fn softmax_round_f32(tensor: Tensor<f32>) -> Tensor<i32> {
     let Vec2(row, col) = tensor.dim();
     let mut vec_rounded = Vec::with_capacity(row);
 
     for i in 0..row {
         let mut m = tensor.get(Vec2(1, 1));
-        let mut index: usize = 0;
+        let mut index = 0;
         for j in 1..col {
             let k = tensor.get(Vec2(i, j));
             if k > m {
-                index = j;
+                index = j as i32;
                 m = k;
             }
         }

@@ -73,7 +73,7 @@ fn read_mnist(labels_path: &Path, labels_checknum: u32, data_path: &Path, data_c
             Ok(_)       => (),
         }
 
-        let sample_data = sample_data.iter().map(|&x| x as f32).collect();
+        let sample_data = sample_data.iter().map(|&x| x as f32 / 128.0).collect();
         let mut sample_labels: Vec<f32> = Vec::with_capacity(batch_count * 10);
         for i in sample_labels_byte {
             match i {
@@ -106,10 +106,11 @@ fn mnist(){
 
     let input_x = Arc::new(Variable::new("input_x".to_string(), Vec2(0, 28 * 28)));
     let target_y = Arc::new(Variable::new("target_y".to_string(), Vec2(0, 10)));
+    let relu_threshold = Arc::new(Variable::new("relu_threshold".to_string(), Vec2(1, 1)));
 
     // Initialize
     let mut variable_context = Context::<f32>::with_capacity(2);
-    Variable::init_f32(vec![input_x.clone(), target_y.clone()], &mut variable_context);
+    Variable::init_f32(vec![input_x.clone(), target_y.clone(), relu_threshold.clone()], &mut variable_context);
 
 
     ///////////
@@ -121,13 +122,13 @@ fn mnist(){
     let mut graph_head: Arc<Graph<f32>> = input_x.clone();
 
     {
-        let w = Arc::new(State::new(format!("weight_w_{}", 1), Vec2(28 * 28, 16)));
-        let b = Arc::new(State::new(format!("weight_b_{}", 1), Vec2(1, 16)));
+        let w = Arc::new(State::new(format!("weight_w_{}", 1), Vec2(28 * 28, 10)));
+        let b = Arc::new(State::new(format!("weight_b_{}", 1), Vec2(1, 10)));
 
         let dot = Arc::new(k::op::dot::<f32>(format!("layer_{}_dot", 1), graph_head.clone(), w.clone()));
         let add = Arc::new(k::op::add::<f32>(format!("layer_{}_add", 1), dot, b.clone()));
 
-        let relu = Arc::new(k::op::relu_f32(format!("layer_{}_relu", 1), add));
+        let relu = Arc::new(k::op::relu_f32(format!("layer_{}_relu", 1), add, relu_threshold.clone()));
 
         graph_head = relu;
 
@@ -135,20 +136,20 @@ fn mnist(){
         states.push(b);
     }
 
-    {
-        let w = Arc::new(State::new(format!("weight_w_{}", 2), Vec2(16, 10)));
-        let b = Arc::new(State::new(format!("weight_b_{}", 2), Vec2(1, 10)));
-
-        let dot = Arc::new(k::op::dot::<f32>(format!("layer_{}_dot", 2), graph_head.clone(), w.clone()));
-        let add = Arc::new(k::op::add::<f32>(format!("layer_{}_add", 2), dot, b.clone()));
-
-        let relu = Arc::new(k::op::relu_f32(format!("layer_{}_relu", 2), add));
-
-        graph_head = relu;
-
-        states.push(w);
-        states.push(b);
-    }
+    // {
+    //     let w = Arc::new(State::new(format!("weight_w_{}", 2), Vec2(16, 10)));
+    //     let b = Arc::new(State::new(format!("weight_b_{}", 2), Vec2(1, 10)));
+    //
+    //     let dot = Arc::new(k::op::dot::<f32>(format!("layer_{}_dot", 2), graph_head.clone(), w.clone()));
+    //     let add = Arc::new(k::op::add::<f32>(format!("layer_{}_add", 2), dot, b.clone()));
+    //
+    //     let relu = Arc::new(k::op::relu_f32(format!("layer_{}_relu", 2), add, relu_threshold.clone()));
+    //
+    //     graph_head = relu;
+    //
+    //     states.push(w);
+    //     states.push(b);
+    // }
 
     let softmax = Arc::new(k::op::softmax_f32(format!("layer_{}_softmax", 3), graph_head.clone()));
     let xentropy = Arc::new(k::cost::softmax_cross_entropy_f32(format!("layer_{}_xentropy", 3), softmax.clone(), target_y.clone()));
@@ -163,17 +164,20 @@ fn mnist(){
     //////////////
     {
         // Parameters
+        let learning_rate = -0.0001;
+        let threshold: f32 = 2.0;
+        let iterations = 8192;
         let batch_size = Some(16);
-        let sample_size = Some(4096);
-        let learning_rate = -0.1;
-        let iterations = 16384;
-        let print_rate = 4096;
+        let sample_size = Some(16 * 8192);
+        let print_rate = 64;
 
         let train_labels_path = Path::new("data/train-labels-idx1-ubyte");
         let train_data_path = Path::new("data/train-images-idx3-ubyte");
         let training_vec = read_mnist(&train_labels_path, 2049, &train_data_path, 2051, batch_size, sample_size);
 
         let mut history = Context::<f32>::with_capacity(5 * layers + 4);
+
+        variable_context.set(relu_threshold.get_id(), Tensor::from_vec(Vec2(1, 1), vec![threshold]));
 
         let training_vec_length = training_vec.len();
         for i in 0..iterations {
@@ -185,7 +189,7 @@ fn mnist(){
 
             // test print
             if i % print_rate == 0 {
-                println!("\niteration: {} | cross entropy cost: {}", i,
+                println!("iteration: {} | cross entropy cost: {}", i,
                 k::execute(xentropy.clone(), &state_context, &variable_context).get(Vec2(0, 0)));
             }
         }
@@ -199,7 +203,6 @@ fn mnist(){
         // Parameters
         let batch_size = None;
         let sample_size = None;
-        let print_rate = 4096;
 
         let test_labels_path = Path::new("data/t10k-labels-idx1-ubyte");
         let test_data_path = Path::new("data/t10k-images-idx3-ubyte");
@@ -209,11 +212,11 @@ fn mnist(){
         variable_context.set(input_x.get_id(), a.clone());
         variable_context.set(target_y.get_id(), b.clone());
 
-        let result_tensor = k::op::softmax_round_f32(k::execute(softmax.clone(), &state_context, &variable_context)) + (k::op::softmax_round_f32(b.clone()) * &-1.0);
+        let result_tensor = k::op::softmax_round_f32(k::execute(softmax.clone(), &state_context, &variable_context)) + (k::op::softmax_round_f32(b.clone()) * -1);
         let total = result_tensor.buffer().len() as f64;
-        let score = 0.0;
-        for i in result_tensor.buffer().iter() {
-            if i == 0.0 {
+        let mut score = 0.0;
+        for &i in result_tensor.buffer().iter() {
+            if i == 0 {
                 score += 1.0;
             }
         }
