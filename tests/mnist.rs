@@ -106,11 +106,10 @@ fn mnist(){
 
     let input_x = Arc::new(Variable::new("input_x".to_string(), Vec2(0, 28 * 28)));
     let target_y = Arc::new(Variable::new("target_y".to_string(), Vec2(0, 10)));
-    let relu_threshold = Arc::new(Variable::new("relu_threshold".to_string(), Vec2(1, 1)));
 
     // Initialize
     let mut variable_context = Context::<f32>::with_capacity(2);
-    Variable::init_f32(vec![input_x.clone(), target_y.clone(), relu_threshold.clone()], &mut variable_context);
+    Variable::init_f32(vec![input_x.clone(), target_y.clone()], &mut variable_context);
 
 
     ///////////
@@ -128,9 +127,9 @@ fn mnist(){
         let dot = Arc::new(k::op::dot::<f32>(format!("layer_{}_dot", 1), graph_head.clone(), w.clone()));
         let add = Arc::new(k::op::add::<f32>(format!("layer_{}_add", 1), dot, b.clone()));
 
-        let relu = Arc::new(k::op::relu_f32(format!("layer_{}_relu", 1), add, relu_threshold.clone()));
+        let sigmoid = Arc::new(k::op::sigmoid_f32(format!("layer_{}_sigmoid", 1), add));
 
-        graph_head = relu;
+        graph_head = sigmoid;
 
         states.push(w);
         states.push(b);
@@ -143,7 +142,7 @@ fn mnist(){
     //     let dot = Arc::new(k::op::dot::<f32>(format!("layer_{}_dot", 2), graph_head.clone(), w.clone()));
     //     let add = Arc::new(k::op::add::<f32>(format!("layer_{}_add", 2), dot, b.clone()));
     //
-    //     let relu = Arc::new(k::op::relu_f32(format!("layer_{}_relu", 2), add, relu_threshold.clone()));
+    //     let sigmoid = Arc::new(k::op::sigmoid_f32(format!("layer_{}_sigmoid", 2), add));
     //
     //     graph_head = relu;
     //
@@ -165,7 +164,6 @@ fn mnist(){
     {
         // Parameters
         let learning_rate = -0.0001;
-        let threshold: f32 = 2.0;
         let iterations = 8192;
         let batch_size = Some(16);
         let sample_size = Some(16 * 8192);
@@ -176,8 +174,6 @@ fn mnist(){
         let training_vec = read_mnist(&train_labels_path, 2049, &train_data_path, 2051, batch_size, sample_size);
 
         let mut history = Context::<f32>::with_capacity(5 * layers + 4);
-
-        variable_context.set(relu_threshold.get_id(), Tensor::from_vec(Vec2(1, 1), vec![threshold]));
 
         let training_vec_length = training_vec.len();
         for i in 0..iterations {
