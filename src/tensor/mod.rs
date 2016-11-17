@@ -121,27 +121,15 @@ impl Tensor<f64> {
     /// # Example
     ///
     /// ```
-    /// let tensor = ktensor::Tensor::<f64>::from_gaussian(ktensor::math::Vec2(5, 5));
-    /// let tensor = tensor.to_flattened();
-    /// assert_eq!(tensor.len(), 25);
-    /// for &i in tensor.iter() {
-    ///     assert!(i <= 1.0 && i >= -1.0);
-    /// }
+    /// let tensor = ktensor::Tensor::<f64>::from_gaussian(ktensor::math::Vec2(5, 5), 2);
     /// ```
-    pub fn from_gaussian(dimensions: Vec2) -> Tensor<f64> {
+    pub fn from_gaussian(dimensions: Vec2, input_dim: usize) -> Tensor<f64> {
         let Vec2(row, col) = dimensions;
         let mut rng = thread_rng();
-        let normal = Normal::new(0.0, 1.0);
+        let normal = Normal::new(0.0, (2.0 / input_dim as f64).sqrt());
         let mut buf = Vec::<f64>::with_capacity(row * col);
         for _ in 0..row * col {
-            let num = normal.ind_sample(&mut rng);
-            if num > 1.0 {
-                buf.push(1.0);
-            } else if num < -1.0 {
-                buf.push(-1.0);
-            } else {
-                buf.push(num);
-            }
+            buf.push(normal.ind_sample(&mut rng));
         }
 
         Tensor {
@@ -162,27 +150,15 @@ impl Tensor<f32> {
     /// # Example
     ///
     /// ```
-    /// let tensor = ktensor::Tensor::<f32>::from_gaussian(ktensor::math::Vec2(5, 5));
-    /// let tensor = tensor.to_flattened();
-    /// assert_eq!(tensor.len(), 25);
-    /// for &i in tensor.iter() {
-    ///     assert!(i <= 1.0 && i >= -1.0);
-    /// }
+    /// let tensor = ktensor::Tensor::<f32>::from_gaussian(ktensor::math::Vec2(5, 5), 2);
     /// ```
-    pub fn from_gaussian(dimensions: Vec2) -> Tensor<f32> {
+    pub fn from_gaussian(dimensions: Vec2, input_dim: usize) -> Tensor<f32> {
         let Vec2(row, col) = dimensions;
         let mut rng = thread_rng();
-        let normal = Normal::new(0.0, 1.0);
+        let normal = Normal::new(0.0, (2.0 / input_dim as f64).sqrt());
         let mut buf = Vec::<f32>::with_capacity(row * col);
         for _ in 0..row * col {
-            let num = normal.ind_sample(&mut rng) as f32;
-            if num > 1.0 {
-                buf.push(1.0);
-            } else if num < -1.0 {
-                buf.push(-1.0);
-            } else {
-                buf.push(num);
-            }
+            buf.push(normal.ind_sample(&mut rng) as f32);
         }
 
         Tensor {

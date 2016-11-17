@@ -24,11 +24,11 @@ impl State {
     }
 
     pub fn init_norm_f64(&self, context: &mut Context<f64>) {
-        context.set(self.get_id(), Tensor::<f64>::from_gaussian(self.dim));
+        context.set(self.get_id(), Tensor::<f64>::from_gaussian(self.dim, self.dim.0));
     }
 
     pub fn init_norm_f32(&self, context: &mut Context<f32>) {
-        context.set(self.get_id(), Tensor::<f32>::from_gaussian(self.dim));
+        context.set(self.get_id(), Tensor::<f32>::from_gaussian(self.dim, self.dim.0));
     }
 
     pub fn init_f64(vec_states: Vec<Arc<State>>, context: &mut Context<f64>) {
