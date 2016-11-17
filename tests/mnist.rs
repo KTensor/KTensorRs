@@ -116,13 +116,13 @@ fn mnist(){
     // Graph //
     ///////////
 
-    let layers: usize = 2;
+    let layers: usize = 4;
     let mut states = Vec::<Arc<State>>::with_capacity(2 * layers);
     let mut graph_head: Arc<Graph<f32>> = input_x.clone();
 
     {
-        let w = Arc::new(State::new(format!("weight_w_{}", 1), Vec2(28 * 28, 64)));
-        let b = Arc::new(State::new(format!("weight_b_{}", 1), Vec2(1, 64)));
+        let w = Arc::new(State::new(format!("weight_w_{}", 1), Vec2(28 * 28, 128)));
+        let b = Arc::new(State::new(format!("weight_b_{}", 1), Vec2(1, 128)));
 
         let dot = Arc::new(k::op::dot::<f32>(format!("layer_{}_dot", 1), graph_head.clone(), w.clone()));
         let add = Arc::new(k::op::add::<f32>(format!("layer_{}_add", 1), dot, b.clone()));
@@ -136,8 +136,8 @@ fn mnist(){
     }
 
     {
-        let w = Arc::new(State::new(format!("weight_w_{}", 2), Vec2(64, 32)));
-        let b = Arc::new(State::new(format!("weight_b_{}", 2), Vec2(1, 32)));
+        let w = Arc::new(State::new(format!("weight_w_{}", 2), Vec2(128, 64)));
+        let b = Arc::new(State::new(format!("weight_b_{}", 2), Vec2(1, 64)));
 
         let dot = Arc::new(k::op::dot::<f32>(format!("layer_{}_dot", 2), graph_head.clone(), w.clone()));
         let add = Arc::new(k::op::add::<f32>(format!("layer_{}_add", 2), dot, b.clone()));
@@ -151,13 +151,28 @@ fn mnist(){
     }
 
     {
-        let w = Arc::new(State::new(format!("weight_w_{}", 3), Vec2(32, 10)));
-        let b = Arc::new(State::new(format!("weight_b_{}", 3), Vec2(1, 10)));
+        let w = Arc::new(State::new(format!("weight_w_{}", 3), Vec2(64, 32)));
+        let b = Arc::new(State::new(format!("weight_b_{}", 3), Vec2(1, 32)));
 
         let dot = Arc::new(k::op::dot::<f32>(format!("layer_{}_dot", 3), graph_head.clone(), w.clone()));
         let add = Arc::new(k::op::add::<f32>(format!("layer_{}_add", 3), dot, b.clone()));
 
         let relu = Arc::new(k::op::relu_f32(format!("layer_{}_relu", 3), add));
+
+        graph_head = relu;
+
+        states.push(w);
+        states.push(b);
+    }
+
+    {
+        let w = Arc::new(State::new(format!("weight_w_{}", 4), Vec2(32, 10)));
+        let b = Arc::new(State::new(format!("weight_b_{}", 4), Vec2(1, 10)));
+
+        let dot = Arc::new(k::op::dot::<f32>(format!("layer_{}_dot", 4), graph_head.clone(), w.clone()));
+        let add = Arc::new(k::op::add::<f32>(format!("layer_{}_add", 4), dot, b.clone()));
+
+        let relu = Arc::new(k::op::relu_f32(format!("layer_{}_relu", 4), add));
 
         graph_head = relu;
 
@@ -179,7 +194,7 @@ fn mnist(){
     {
         // Parameters
         let learning_rate = -0.001;
-        let iterations = 4096;
+        let iterations = 2048;
         let batch_size = 16;
         let sample_size = iterations * batch_size;
         let print_rate = 64;
