@@ -9,9 +9,9 @@ fn operation_f64(vec: Vec<Tensor<f64>>) -> Tensor<f64> {
         if a > 16.0 {
             a
         } else if a < -16.0 {
-            a / 16.0
+            a / 64.0
         } else {
-            a / 16.0 + 0.9375 * (1.0 + a.exp()).ln()
+            a / 64.0 + 0.984375 * (1.0 + a.exp()).ln()
         }
     }).collect())
 }
@@ -21,9 +21,9 @@ fn operation_f32(vec: Vec<Tensor<f32>>) -> Tensor<f32> {
         if a > 16.0 {
             a
         } else if a < -16.0 {
-            a / 16.0
+            a / 64.0
         } else {
-            a / 16.0 + 0.9375 * (1.0 + a.exp()).ln()
+            a / 64.0 + 0.984375 * (1.0 + a.exp()).ln()
         }
     }).collect())
 }
@@ -33,9 +33,9 @@ fn operation_prime_f64(gradient: &Tensor<f64>, vec: Vec<&Tensor<f64>>) -> Vec<Te
         if a > 16.0 {
             g
         } else if a < -16.0 {
-            g / 16.0
+            g / 64.0
         } else {
-            g * (0.0625 + 0.9375 * (1.0 + (-a).exp()).recip())
+            g * (0.015625 + 0.984375 * (1.0 + (-a).exp()).recip())
         }
     }).collect())]
 }
@@ -45,9 +45,9 @@ fn operation_prime_f32(gradient: &Tensor<f32>, vec: Vec<&Tensor<f32>>) -> Vec<Te
         if a > 16.0 {
             g
         } else if a < -16.0 {
-            g / 16.0
+            g / 64.0
         } else {
-            g * (0.0625 + 0.9375 * (1.0 + (-a).exp()).recip())
+            g * (0.015625 + 0.984375 * (1.0 + (-a).exp()).recip())
         }
     }).collect())]
 }

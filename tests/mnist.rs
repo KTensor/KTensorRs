@@ -163,15 +163,15 @@ fn mnist(){
     //////////////
     {
         // Parameters
-        let learning_rate = -0.1;
+        let learning_rate = -0.01;
         let iterations = 4096;
-        let batch_size = Some(16);
-        let sample_size = Some(4096 * 16);
+        let batch_size = 16;
+        let sample_size = iterations * batch_size;
         let print_rate = 64;
 
         let train_labels_path = Path::new("data/train-labels-idx1-ubyte");
         let train_data_path = Path::new("data/train-images-idx3-ubyte");
-        let training_vec = read_mnist(&train_labels_path, 2049, &train_data_path, 2051, batch_size, sample_size);
+        let training_vec = read_mnist(&train_labels_path, 2049, &train_data_path, 2051, Some(batch_size), Some(sample_size));
 
         let mut history = Context::<f32>::with_capacity(5 * layers + 4);
 
@@ -189,6 +189,8 @@ fn mnist(){
                 k::execute(xentropy.clone(), &state_context, &variable_context).get(Vec2(0, 0)));
             }
         }
+
+        println!("\ntraining complete\nalpha: {}, iterations: {}, batch_size: {}", learning_rate, iterations, batch_size);
     }
 
     ////////////////
