@@ -32,7 +32,7 @@ fn read_u32(reader: &mut Read) -> u32 {
     }
 }
 
-fn read_mnist(labels_path: &Path, labels_checknum: u32, data_path: &Path, data_checknum: u32, batch_size: usize, sample_size: Option<usize>) -> Vec<(Tensor<f32>, Tensor<f32>)> {
+fn read_mnist(labels_path: &Path, labels_checknum: u32, data_path: &Path, data_checknum: u32, batch_size: Option<usize>, sample_size: Option<usize>) -> Vec<(Tensor<f32>, Tensor<f32>)> {
     let labels_file = match File::open(&labels_path) {
         Err(reason) => panic!("failed to open {}: {}", labels_path.display(), Error::description(&reason)),
         Ok(file)    => file,
@@ -55,24 +55,26 @@ fn read_mnist(labels_path: &Path, labels_checknum: u32, data_path: &Path, data_c
     let sample_count = cmp::min(labels_count, data_count);
     let sample_count = cmp::min(sample_count, sample_size.unwrap_or(sample_count));
 
+    let batch_count = cmp::min(sample_count, batch_size.unwrap_or(sample_count));
+
     let rows = u32::from_be(read_u32(data_reader)) as usize;
     let columns = u32::from_be(read_u32(data_reader)) as usize;
 
-    let mut sample_vec: Vec<(Tensor<f32>, Tensor<f32>)> = Vec::with_capacity(sample_count/batch_size);
-    for _ in 0..sample_count/batch_size {
-        let mut sample_data = vec![0u8; batch_size*rows*columns];
+    let mut sample_vec: Vec<(Tensor<f32>, Tensor<f32>)> = Vec::with_capacity(sample_count/batch_count);
+    for _ in 0..sample_count/batch_count {
+        let mut sample_data = vec![0u8; batch_count*rows*columns];
         match data_reader.read_exact(sample_data.as_mut()) {
             Err(reason) => panic!("failed to read data byte array: {}", Error::description(&reason)),
             Ok(_)       => (),
         }
-        let mut sample_labels_byte = vec![0u8; batch_size];
-        match labels_reader.read_exact(sample_labels.as_mut()) {
+        let mut sample_labels_byte = vec![0u8; batch_count];
+        match labels_reader.read_exact(sample_labels_byte.as_mut()) {
             Err(reason) => panic!("failed to read labels byte array: {}", Error::description(&reason)),
             Ok(_)       => (),
         }
 
-        let sample_data = sample_data.map(|x| x as f32);
-        let sample_labels = Vec<f32>::with_capacity(batch_size * 10);
+        let sample_data = sample_data.iter().map(|&x| x as f32).collect();
+        let mut sample_labels: Vec<f32> = Vec::with_capacity(batch_count * 10);
         for i in sample_labels_byte {
             match i {
                 0 => sample_labels.extend([1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0].iter().cloned()),
@@ -89,7 +91,7 @@ fn read_mnist(labels_path: &Path, labels_checknum: u32, data_path: &Path, data_c
             }
         }
 
-        sample_vec.push((Tensor::from_vec(Vec2(batch_size, rows*columns), sample_data), Tensor::from_vec(Vec2(batch_size, 10), sample_labels)));
+        sample_vec.push((Tensor::from_vec(Vec2(batch_count, rows*columns), sample_data), Tensor::from_vec(Vec2(batch_count, 10), sample_labels)));
     }
 
     sample_vec
@@ -161,7 +163,7 @@ fn mnist(){
     //////////////
     {
         // Parameters
-        let batch_size = 16;
+        let batch_size = Some(16);
         let sample_size = Some(4096);
         let learning_rate = -0.1;
         let iterations = 16384;
@@ -193,10 +195,10 @@ fn mnist(){
     // Final test //
     ////////////////
     {
+        println!("\nFinal Test:\n");
         // Parameters
-        let batch_size = 1;
+        let batch_size = None;
         let sample_size = None;
-        let iterations = 16384;
         let print_rate = 4096;
 
         let test_labels_path = Path::new("data/t10k-labels-idx1-ubyte");
@@ -206,12 +208,8 @@ fn mnist(){
         let mut history = Context::<f32>::with_capacity(5 * layers + 4);
 
         let score = 0.0;
-        let test_vec_length = test_vec.len();
-        for i in 0..iterations {
-            let (ref a, ref b) = test_vec[i % test_vec_length];
-            variable_context.set(input_x.get_id(), a.clone());
-            variable_context.set(target_y.get_id(), b.clone());
-            
-        }
+        let (ref a, ref b) = test_vec[0];
+        variable_context.set(input_x.get_id(), a.clone());
+        variable_context.set(target_y.get_id(), b.clone());
     }
 }
