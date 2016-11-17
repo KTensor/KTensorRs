@@ -205,11 +205,19 @@ fn mnist(){
         let test_data_path = Path::new("data/t10k-images-idx3-ubyte");
         let test_vec = read_mnist(&test_labels_path, 2049, &test_data_path, 2051, batch_size, sample_size);
 
-        let mut history = Context::<f32>::with_capacity(5 * layers + 4);
-
-        let score = 0.0;
         let (ref a, ref b) = test_vec[0];
         variable_context.set(input_x.get_id(), a.clone());
         variable_context.set(target_y.get_id(), b.clone());
+
+        let result_tensor = k::op::softmax_round_f32(k::execute(softmax.clone(), &state_context, &variable_context)) + (k::op::softmax_round_f32(b.clone()) * &-1.0);
+        let total = result_tensor.buffer().len() as f64;
+        let score = 0.0;
+        for i in result_tensor.buffer().iter() {
+            if i == 0.0 {
+                score += 1.0;
+            }
+        }
+
+        println!("{}", score/total);
     }
 }
