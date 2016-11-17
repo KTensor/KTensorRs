@@ -73,7 +73,7 @@ fn read_mnist(labels_path: &Path, labels_checknum: u32, data_path: &Path, data_c
             Ok(_)       => (),
         }
 
-        let sample_data = sample_data.iter().map(|&x| x as f32 / 128.0).collect();
+        let sample_data = sample_data.iter().map(|&x| x as f32 / 256.0).collect();
         let mut sample_labels: Vec<f32> = Vec::with_capacity(batch_count * 10);
         for i in sample_labels_byte {
             match i {
@@ -121,34 +121,34 @@ fn mnist(){
     let mut graph_head: Arc<Graph<f32>> = input_x.clone();
 
     {
-        let w = Arc::new(State::new(format!("weight_w_{}", 1), Vec2(28 * 28, 10)));
-        let b = Arc::new(State::new(format!("weight_b_{}", 1), Vec2(1, 10)));
+        let w = Arc::new(State::new(format!("weight_w_{}", 1), Vec2(28 * 28, 16)));
+        let b = Arc::new(State::new(format!("weight_b_{}", 1), Vec2(1, 16)));
 
         let dot = Arc::new(k::op::dot::<f32>(format!("layer_{}_dot", 1), graph_head.clone(), w.clone()));
         let add = Arc::new(k::op::add::<f32>(format!("layer_{}_add", 1), dot, b.clone()));
 
-        let sigmoid = Arc::new(k::op::sigmoid_f32(format!("layer_{}_sigmoid", 1), add));
+        let relu = Arc::new(k::op::relu_f32(format!("layer_{}_relu", 1), add));
 
-        graph_head = sigmoid;
+        graph_head = relu;
 
         states.push(w);
         states.push(b);
     }
 
-    // {
-    //     let w = Arc::new(State::new(format!("weight_w_{}", 2), Vec2(16, 10)));
-    //     let b = Arc::new(State::new(format!("weight_b_{}", 2), Vec2(1, 10)));
-    //
-    //     let dot = Arc::new(k::op::dot::<f32>(format!("layer_{}_dot", 2), graph_head.clone(), w.clone()));
-    //     let add = Arc::new(k::op::add::<f32>(format!("layer_{}_add", 2), dot, b.clone()));
-    //
-    //     let sigmoid = Arc::new(k::op::sigmoid_f32(format!("layer_{}_sigmoid", 2), add));
-    //
-    //     graph_head = relu;
-    //
-    //     states.push(w);
-    //     states.push(b);
-    // }
+    {
+        let w = Arc::new(State::new(format!("weight_w_{}", 2), Vec2(16, 10)));
+        let b = Arc::new(State::new(format!("weight_b_{}", 2), Vec2(1, 10)));
+
+        let dot = Arc::new(k::op::dot::<f32>(format!("layer_{}_dot", 2), graph_head.clone(), w.clone()));
+        let add = Arc::new(k::op::add::<f32>(format!("layer_{}_add", 2), dot, b.clone()));
+
+        let relu = Arc::new(k::op::relu_f32(format!("layer_{}_relu", 2), add));
+
+        graph_head = relu;
+
+        states.push(w);
+        states.push(b);
+    }
 
     let softmax = Arc::new(k::op::softmax_f32(format!("layer_{}_softmax", 3), graph_head.clone()));
     let xentropy = Arc::new(k::cost::softmax_cross_entropy_f32(format!("layer_{}_xentropy", 3), softmax.clone(), target_y.clone()));
@@ -163,10 +163,10 @@ fn mnist(){
     //////////////
     {
         // Parameters
-        let learning_rate = -0.0001;
-        let iterations = 8192;
+        let learning_rate = -0.1;
+        let iterations = 4096;
         let batch_size = Some(16);
-        let sample_size = Some(16 * 8192);
+        let sample_size = Some(4096 * 16);
         let print_rate = 64;
 
         let train_labels_path = Path::new("data/train-labels-idx1-ubyte");
